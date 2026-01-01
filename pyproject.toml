@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cardiac-shared"
+version = "0.1.0"
+description = "Shared utilities for cardiac imaging analysis projects"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Cardiac ML Research Team"}
+]
+keywords = ["cardiac", "medical-imaging", "dicom", "nifti"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+
+dependencies = [
+    "numpy>=1.24.0,<2.0",
+]
+
+[project.optional-dependencies]
+dicom = ["pydicom>=2.0.0"]
+nifti = ["nibabel>=5.0.0"]
+all = ["pydicom>=2.0.0", "nibabel>=5.0.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/cardiac-ml/cardiac-shared"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cardiac_shared*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
