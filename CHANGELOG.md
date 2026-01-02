@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-01-02
+
+### Added
+- Data registry module (`cardiac_shared.data`)
+  - `IntermediateResultsRegistry` - Cross-project data discovery and sharing
+  - `RegistryEntry` - Data class for registry entries
+  - `get_registry()` - Singleton access function
+  - Dot-notation key access (e.g., 'segmentation.totalsegmentator_organs.chd_v2')
+  - Automatic Windows/WSL path conversion
+  - Usage pattern suggestions for each project
+  - Path validation and existence checking
+  - Consumer tracking for impact analysis
+
+### Changed
+- Version bumped to 0.4.0
+- Added pyyaml as core dependency
+- Updated module documentation
+
+---
+
 ## [0.3.0] - 2026-01-02
 
 ### Added

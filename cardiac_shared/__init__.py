@@ -2,8 +2,8 @@
 Cardiac Shared - Common utilities for cardiac imaging projects
 
 This package provides shared IO, hardware detection, environment detection,
-parallel processing, progress tracking, caching, and configuration management
-for cardiac imaging analysis across multiple projects.
+parallel processing, progress tracking, caching, configuration management,
+and data registry for cardiac imaging analysis across multiple projects.
 
 Modules:
 - io: DICOM, NIfTI, and ZIP file handling
@@ -14,9 +14,10 @@ Modules:
 - cache: Result caching with resume capability
 - batch: Batch processing framework
 - config: YAML configuration management
+- data: Intermediate results registry for cross-project sharing
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata
@@ -71,6 +72,13 @@ from cardiac_shared.batch import BatchProcessor, BatchConfig
 # Configuration management
 from cardiac_shared.config import ConfigManager, load_config
 
+# Data registry
+from cardiac_shared.data import (
+    IntermediateResultsRegistry,
+    RegistryEntry,
+    get_registry,
+)
+
 __all__ = [
     # Version
     '__version__',
@@ -124,4 +132,9 @@ __all__ = [
     # Config
     'ConfigManager',
     'load_config',
+
+    # Data registry
+    'IntermediateResultsRegistry',
+    'RegistryEntry',
+    'get_registry',
 ]
