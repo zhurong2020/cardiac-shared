@@ -1,20 +1,24 @@
 # Cardiac Shared
 
+[![PyPI version](https://badge.fury.io/py/cardiac-shared.svg)](https://pypi.org/project/cardiac-shared/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.2.0
+**Version**: 0.3.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
 ```bash
-# Install with all features
-pip install -e ".[all]"
+# Install from PyPI (recommended)
+pip install cardiac-shared
 
-# Install with DICOM support only
-pip install -e ".[dicom]"
-
-# Install with NIfTI support only
-pip install -e ".[nifti]"
+# Install with optional dependencies
+pip install cardiac-shared[all]      # All optional deps
+pip install cardiac-shared[dicom]    # DICOM support
+pip install cardiac-shared[nifti]    # NIfTI support
+pip install cardiac-shared[gpu]      # GPU/PyTorch support
 ```
 
 ## Modules
@@ -30,7 +34,7 @@ pip install -e ".[nifti]"
 | `extract_zip(path)` | Context manager for ZIP extraction |
 | `find_dicom_root(path)` | Find DICOM directory in extracted ZIP |
 
-### Hardware Module (v0.2.0)
+### Hardware Module
 
 | Function | Description |
 |----------|-------------|
@@ -39,9 +43,8 @@ pip install -e ".[nifti]"
 | `print_hardware_summary(hw)` | Print formatted hardware summary |
 | `get_optimal_config(hw)` | Get optimal inference configuration |
 | `CPUOptimizer` | CPU optimization for hospital deployments |
-| `apply_cpu_optimizations(config)` | Apply PyTorch CPU optimizations |
 
-### Environment Module (v0.2.0)
+### Environment Module
 
 | Function | Description |
 |----------|-------------|
@@ -49,88 +52,161 @@ pip install -e ".[nifti]"
 | `RuntimeEnvironment` | Dataclass with environment info |
 | `detect_colab()` | Check if running in Google Colab |
 | `detect_wsl()` | Check if running in WSL |
-| `print_environment_summary(env)` | Print environment summary |
 
-## Usage
+### Parallel Module (v0.3.0)
 
-### IO Operations
+| Class/Function | Description |
+|----------------|-------------|
+| `ParallelProcessor` | Unified parallel processing framework |
+| `parallel_map()` | Quick parallel map without checkpoint |
+| `parallel_map_with_checkpoint()` | Parallel map with resume support |
+| `ProcessingResult` | Result dataclass for each processed item |
+| `Checkpoint` | Checkpoint data for resume capability |
 
-```python
-from cardiac_shared.io import read_dicom_series, load_nifti, extract_zip, find_dicom_root
+### Progress Module (v0.3.0)
 
-# Read DICOM series
-volume, metadata = read_dicom_series("/path/to/dicom/")
+| Class/Function | Description |
+|----------------|-------------|
+| `ProgressTracker` | Multi-level progress visualization |
+| `create_tracker()` | Create and start a progress tracker |
+| `ProgressLevel` | Progress tracking for a single level |
 
-# Read NIfTI file
-volume, metadata = load_nifti("/path/to/file.nii.gz")
+### Cache Module (v0.3.0)
 
-# Extract ZIP and read DICOM
-with extract_zip("/path/to/data.zip") as extracted_dir:
-    dicom_root = find_dicom_root(extracted_dir)
-    volume, metadata = read_dicom_series(dicom_root)
-```
+| Class | Description |
+|-------|-------------|
+| `CacheManager` | Multi-level caching with resume capability |
+
+### Batch Module (v0.3.0)
+
+| Class | Description |
+|-------|-------------|
+| `BatchProcessor` | Generic batch processing framework |
+| `BatchConfig` | Batch processing configuration |
+
+### Config Module (v0.3.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `ConfigManager` | YAML/JSON configuration management |
+| `load_config()` | Load configuration with defaults |
+
+## Usage Examples
 
 ### Hardware Detection
 
 ```python
-from cardiac_shared import detect_hardware, print_hardware_summary
+from cardiac_shared import detect_hardware, detect_runtime
 
 hw = detect_hardware()
-print_hardware_summary(hw)
-
-print(f"Performance Tier: {hw.performance_tier}")
-print(f"Recommended Device: {hw.recommended_device}")
-print(f"GPU Available: {hw.gpu.available}")
+print(f"GPU: {hw.gpu.device_name if hw.gpu.available else 'None'}")
 print(f"CPU Cores: {hw.cpu.physical_cores}")
-```
-
-### Environment Detection
-
-```python
-from cardiac_shared import detect_runtime, print_environment_summary
+print(f"RAM: {hw.ram.total_gb:.1f} GB")
 
 env = detect_runtime()
-print_environment_summary(env)
-
-print(f"Runtime Type: {env.runtime_type}")
-print(f"Is WSL: {env.is_wsl}")
-print(f"Is Hospital Environment: {env.is_hospital_environment}")
+print(f"Runtime: {env.runtime_type}")  # wsl, linux, windows, colab
 ```
 
-### CPU Optimization (Hospital Deployment)
+### Parallel Processing with Checkpoint
 
 ```python
-from cardiac_shared import detect_hardware, detect_runtime, CPUOptimizer
+from cardiac_shared.parallel import ParallelProcessor
 
-hw = detect_hardware()
-env = detect_runtime()
+def process_patient(patient_id):
+    # Your processing logic
+    return {"id": patient_id, "status": "done"}
 
-if env.is_hospital_environment and not hw.gpu.available:
-    optimizer = CPUOptimizer()
-    config = optimizer.get_optimal_config()
+processor = ParallelProcessor(
+    max_workers=4,
+    checkpoint_file="results/checkpoint.json"
+)
 
-    print(f"CPU Tier: {config.tier.value}")
-    print(f"Recommended Workers: {config.num_workers}")
-    print(f"Batch Size: {config.batch_size}")
+results = processor.map_with_checkpoint(
+    process_patient,
+    patient_list,
+    desc="Processing patients"
+)
 
-    # Apply PyTorch optimizations
-    optimizer.apply_torch_optimizations(config)
+processor.print_summary(results)
+```
+
+### Progress Tracking
+
+```python
+from cardiac_shared.progress import ProgressTracker
+
+tracker = ProgressTracker()
+tracker.start_overall("Processing Pipeline", total=100)
+
+for i, item in enumerate(items):
+    tracker.start_step(f"Step {i+1}", total=3)
+
+    tracker.update_substep("Loading data")
+    # ... load data
+    tracker.update_step_progress()
+
+    tracker.update_substep("Processing")
+    # ... process
+    tracker.update_step_progress()
+
+    tracker.complete_step()
+    tracker.update_overall(i + 1)
+
+tracker.finish()
+```
+
+### Cache Management
+
+```python
+from cardiac_shared.cache import CacheManager
+
+cache = CacheManager("results/cache.json")
+
+for patient_id in patient_list:
+    if cache.is_completed(patient_id):
+        continue  # Skip already processed
+
+    result = process_patient(patient_id)
+    cache.mark_completed(patient_id, result)
+```
+
+### Configuration Management
+
+```python
+from cardiac_shared.config import ConfigManager
+
+config = ConfigManager("config/settings.yaml")
+db_host = config.get("database.host", default="localhost")
+config.set("processing.batch_size", 32)
+config.save()
 ```
 
 ## Projects Using This Package
 
-- cardiac-ml-research (main project)
-- ai-cac-research (CAC scoring research)
-- pcfa (Pericardial Fat Analysis)
-- vbca (Vertebra Body Composition Analysis)
+- [vbca](https://github.com/zhurong2020/vbca) - Vertebral Body Composition Analysis
+- cardiac-ml-research - Main research project
+- pcfa - Pericardial Fat Analysis
+- ai-cac-research - CAC scoring research
 
 ## Changelog
 
-### v0.2.0 (2026-01-01)
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.3.0 (2026-01-02)
+- Added `parallel` module (ParallelProcessor, checkpoint/resume)
+- Added `progress` module (ProgressTracker, multi-level)
+- Added `cache` module (CacheManager)
+- Added `batch` module (BatchProcessor)
+- Added `config` module (ConfigManager)
+- Published to PyPI
+
+### v0.2.0 (2026-01-02)
 - Added `hardware` module (detector, cpu_optimizer)
 - Added `environment` module (runtime_detector)
-- Migrated from cardiac-ml-research/shared/
 
-### v0.1.0 (2026-01-01)
-- Initial release
-- IO modules: dicom, nifti, zip_handler
+### v0.1.0 (2025-12-01)
+- Initial release with IO modules
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
