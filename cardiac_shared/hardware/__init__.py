@@ -35,6 +35,26 @@ from cardiac_shared.hardware.cpu_optimizer import (
     apply_cpu_optimizations,
 )
 
+from cardiac_shared.hardware.optimizer import (
+    # Performance optimization
+    PerformanceOptimizer,
+    DeviceRecommendation,
+    TimeEstimate,
+)
+
+from cardiac_shared.hardware.profiles import (
+    # GPU Profiles
+    GPUProfile,
+    GPU_PROFILES,
+    estimate_batch_time,
+    match_gpu_profile,
+    get_all_profiles,
+)
+
+# Backward compatibility alias
+HardwareDetector = detect_hardware
+HardwareProfile = HardwareInfo
+
 __all__ = [
     # Data classes
     'GPUInfo',
@@ -61,4 +81,20 @@ __all__ = [
     'get_cpu_optimizer',
     'get_optimal_cpu_config',
     'apply_cpu_optimizations',
+
+    # Performance Optimization
+    'PerformanceOptimizer',
+    'DeviceRecommendation',
+    'TimeEstimate',
+
+    # GPU Profiles
+    'GPUProfile',
+    'GPU_PROFILES',
+    'estimate_batch_time',
+    'match_gpu_profile',
+    'get_all_profiles',
+
+    # Backward compatibility aliases
+    'HardwareDetector',
+    'HardwareProfile',
 ]
