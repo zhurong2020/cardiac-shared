@@ -2,17 +2,21 @@
 Cardiac Shared - Common utilities for cardiac imaging projects
 
 This package provides shared IO, hardware detection, environment detection,
-and utility functions for cardiac imaging analysis across multiple projects.
+parallel processing, progress tracking, caching, and configuration management
+for cardiac imaging analysis across multiple projects.
 
 Modules:
 - io: DICOM, NIfTI, and ZIP file handling
 - hardware: Hardware detection and CPU optimization
 - environment: Runtime environment detection
-- preprocessing: Image preprocessing utilities (planned)
-- utils: General utility functions (planned)
+- parallel: Parallel processing with checkpoint support
+- progress: Multi-level progress tracking
+- cache: Result caching with resume capability
+- batch: Batch processing framework
+- config: YAML configuration management
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata
@@ -41,6 +45,31 @@ from cardiac_shared.environment import (
     detect_wsl,
     print_environment_summary,
 )
+
+# Parallel processing
+from cardiac_shared.parallel import (
+    ParallelProcessor,
+    ProcessingResult,
+    Checkpoint,
+    parallel_map,
+    parallel_map_with_checkpoint,
+)
+
+# Progress tracking
+from cardiac_shared.progress import (
+    ProgressTracker,
+    ProgressLevel,
+    create_tracker,
+)
+
+# Cache management
+from cardiac_shared.cache import CacheManager
+
+# Batch processing
+from cardiac_shared.batch import BatchProcessor, BatchConfig
+
+# Configuration management
+from cardiac_shared.config import ConfigManager, load_config
 
 __all__ = [
     # Version
@@ -72,4 +101,27 @@ __all__ = [
     'detect_colab',
     'detect_wsl',
     'print_environment_summary',
+
+    # Parallel
+    'ParallelProcessor',
+    'ProcessingResult',
+    'Checkpoint',
+    'parallel_map',
+    'parallel_map_with_checkpoint',
+
+    # Progress
+    'ProgressTracker',
+    'ProgressLevel',
+    'create_tracker',
+
+    # Cache
+    'CacheManager',
+
+    # Batch
+    'BatchProcessor',
+    'BatchConfig',
+
+    # Config
+    'ConfigManager',
+    'load_config',
 ]
