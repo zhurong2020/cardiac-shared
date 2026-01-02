@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.3.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.4.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -90,6 +90,14 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 |----------------|-------------|
 | `ConfigManager` | YAML/JSON configuration management |
 | `load_config()` | Load configuration with defaults |
+
+### Data Module (v0.4.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `IntermediateResultsRegistry` | Cross-project data discovery and sharing |
+| `RegistryEntry` | Dataclass for registry entries |
+| `get_registry()` | Get singleton registry instance |
 
 ## Usage Examples
 
@@ -181,6 +189,30 @@ config.set("processing.batch_size", 32)
 config.save()
 ```
 
+### Intermediate Results Registry (v0.4.0)
+
+```python
+from cardiac_shared.data import get_registry
+
+# Get singleton registry instance
+registry = get_registry()
+
+# Check if TotalSegmentator results are available
+if registry.exists('segmentation.totalsegmentator_organs.chd_v2'):
+    organs_path = registry.get_path('segmentation.totalsegmentator_organs.chd_v2')
+    heart_mask = organs_path / patient_id / 'heart.nii.gz'
+
+# Get metadata
+meta = registry.get_metadata('body_composition.vbca_stage1_labels.zal_v3.2')
+print(f"Patient count: {meta.get('patient_count')}")
+
+# List available results
+available = registry.list_available('segmentation')
+
+# Get usage suggestion for a project
+suggestion = registry.suggest_input('pcfa', 'heart_masks', 'chd')
+```
+
 ## Projects Using This Package
 
 - [vbca](https://github.com/zhurong2020/vbca) - Vertebral Body Composition Analysis
@@ -191,6 +223,12 @@ config.save()
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.4.0 (2026-01-02)
+- Added `data` module (IntermediateResultsRegistry)
+- Cross-project intermediate results discovery and sharing
+- Automatic Windows/WSL path conversion
+- Usage pattern suggestions per project
 
 ### v0.3.0 (2026-01-02)
 - Added `parallel` module (ParallelProcessor, checkpoint/resume)
