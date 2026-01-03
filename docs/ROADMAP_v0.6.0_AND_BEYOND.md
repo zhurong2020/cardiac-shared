@@ -2,9 +2,9 @@
 # cardiac-shared 开发路线图
 
 **Created**: 2026-01-03
-**Current Version**: 0.5.0
-**Next Version**: 0.5.1 (patch) / 0.6.0 (feature)
-**Status**: Planning Complete - Ready for Implementation
+**Current Version**: 0.5.1
+**Next Version**: 0.6.0 (feature)
+**Status**: v0.5.1 Released - Ready for v0.6.0
 
 ---
 
@@ -19,15 +19,17 @@ MAJOR.MINOR.PATCH
 
 ---
 
-## 1. Current State Summary (v0.5.0)
+## 1. Current State Summary (v0.5.1)
 
 ### 1.1 Released Modules
 
 | Module | Description | Version |
 |--------|-------------|---------|
 | `hardware` | GPU/CPU/RAM detection, CPUOptimizer, PerformanceOptimizer, GPU_PROFILES | v0.2.0 |
+| `hardware.gpu_utils` | GPU stabilization time, performance tier | v0.5.1 |
 | `environment` | Runtime detection (Colab/WSL/Windows/Linux) | v0.2.0 |
 | `io` | DICOM, NIfTI, ZIP handling | v0.2.0 |
+| `io.preloader` | AsyncNiftiPreloader, background preloading | v0.5.1 |
 | `parallel` | ParallelProcessor with checkpoint/resume | v0.3.0 |
 | `progress` | Multi-level ProgressTracker with ETA | v0.3.0 |
 | `cache` | CacheManager with atomic writes | v0.3.0 |
@@ -45,11 +47,12 @@ MAJOR.MINOR.PATCH
 
 ---
 
-## 2. Version 0.5.1 Plan (PATCH - Small Optimizations)
+## 2. Version 0.5.1 (RELEASED - 2026-01-03)
 
 **Source**: RTX 4060 optimization research (2026-01-03)
 **Objective**: Small optimizations for TotalSegmentator pipeline (~5-10% speedup)
 **Scope**: No new modules, only enhancements to existing modules
+**PyPI**: https://pypi.org/project/cardiac-shared/0.5.1/
 
 ### 2.1 Enhancement: `hardware/gpu_utils.py`
 
@@ -114,24 +117,24 @@ preloader.stop()
 - After v0.6.0: ~18-19 hours
 - Savings: ~1-2 hours
 
-### 2.4 Implementation Tasks (v0.5.1)
+### 2.4 Implementation Tasks (v0.5.1) - COMPLETED
 
 ```
-[ ] 1. Add to cardiac_shared/hardware/gpu_utils.py
-    [ ] 1.1 Implement get_recommended_gpu_stabilization_time()
-    [ ] 1.2 Add GPU model recognition (NVIDIA naming patterns)
-    [ ] 1.3 Unit tests
+[x] 1. Add to cardiac_shared/hardware/gpu_utils.py
+    [x] 1.1 Implement get_recommended_gpu_stabilization_time()
+    [x] 1.2 Add GPU model recognition (NVIDIA naming patterns)
+    [x] 1.3 Unit tests (31 tests)
 
-[ ] 2. Add to cardiac_shared/io/preloader.py
-    [ ] 2.1 Implement AsyncNiftiPreloader class
-    [ ] 2.2 Thread-safe queue and cache
-    [ ] 2.3 Unit tests
+[x] 2. Add to cardiac_shared/io/preloader.py
+    [x] 2.1 Implement AsyncNiftiPreloader class
+    [x] 2.2 Thread-safe queue and cache
+    [x] 2.3 Unit tests (7 tests)
 
-[ ] 3. Update exports and version
-    [ ] 3.1 Update __init__.py exports
-    [ ] 3.2 Bump version to 0.5.1
-    [ ] 3.3 Update CHANGELOG.md
-    [ ] 3.4 Release to PyPI
+[x] 3. Update exports and version
+    [x] 3.1 Update __init__.py exports
+    [x] 3.2 Bump version to 0.5.1
+    [x] 3.3 Update CHANGELOG.md
+    [x] 3.4 Release to PyPI (2026-01-03)
 ```
 
 ---
