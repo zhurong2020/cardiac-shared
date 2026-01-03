@@ -51,6 +51,13 @@ from cardiac_shared.hardware.profiles import (
     get_all_profiles,
 )
 
+from cardiac_shared.hardware.gpu_utils import (
+    # GPU utilities (v0.5.1)
+    get_recommended_gpu_stabilization_time,
+    get_gpu_performance_tier,
+    GPU_STABILIZATION_TIMES,
+)
+
 # Backward compatibility alias
 HardwareDetector = detect_hardware
 HardwareProfile = HardwareInfo
@@ -97,4 +104,9 @@ __all__ = [
     # Backward compatibility aliases
     'HardwareDetector',
     'HardwareProfile',
+
+    # GPU utilities (v0.5.1)
+    'get_recommended_gpu_stabilization_time',
+    'get_gpu_performance_tier',
+    'GPU_STABILIZATION_TIMES',
 ]

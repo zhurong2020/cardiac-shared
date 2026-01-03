@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-01-03
+
+### Added
+- GPU utilities module (`cardiac_shared.hardware.gpu_utils`)
+  - `get_recommended_gpu_stabilization_time()` - Dynamic GPU wait time (1-5s based on GPU model)
+  - `get_gpu_performance_tier()` - Quick GPU classification (high/medium/low)
+  - `GPU_STABILIZATION_TIMES` - Lookup table for known GPU models
+- Async NIfTI preloader (`cardiac_shared.io.preloader`)
+  - `AsyncNiftiPreloader` - Background preloading with LRU cache
+  - `preload_nifti_batch()` - Convenience function for batch processing
+  - Thread-safe operations with statistics tracking
+
+### Performance
+- GPU stabilization time reduced from 5s to 1-2s for RTX 40 series
+- Expected 5-10% speedup for TotalSegmentator pipelines
+- For 464 CHD cases: ~20h → ~18-19h (~1-2h savings)
+
+---
+
+## [0.5.0] - 2026-01-03
+
+### Added
+- Data sources management module (`cardiac_shared.data_sources`)
+  - `DataSourceManager` - Multi-source data management
+  - Support for ZAL, CHD, Normal, Custom datasets
+  - Automatic environment detection (WSL/Windows/Linux)
+  - YAML configuration support
+- Vertebra detection module (`cardiac_shared.vertebra`)
+  - `VertebraDetector` - Parse TotalSegmentator output
+  - ROI calculation for body composition analysis
+  - Center slice and volume calculation
+- Tissue classification module (`cardiac_shared.tissue`)
+  - `TissueClassifier` with Alberta Protocol 2024 HU ranges
+  - SAT/VAT/IMAT/Muscle filtering
+  - Muscle quality assessment (Goodpaster criteria)
+
+### Changed
+- Version bumped to 0.5.0
+- Added 44 new unit tests
+
+---
+
 ## [0.4.0] - 2026-01-02
 
 ### Added

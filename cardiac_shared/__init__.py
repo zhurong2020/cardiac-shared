@@ -21,12 +21,13 @@ Modules:
 - tissue: Tissue classification and HU filtering (SAT, VAT, IMAT)
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata
 from cardiac_shared.io.nifti import load_nifti, save_nifti
 from cardiac_shared.io.zip_handler import extract_zip, find_dicom_root
+from cardiac_shared.io.preloader import AsyncNiftiPreloader, preload_nifti_batch
 
 # Hardware detection
 from cardiac_shared.hardware import (
@@ -40,6 +41,9 @@ from cardiac_shared.hardware import (
     CPUOptimizer,
     get_cpu_optimizer,
     apply_cpu_optimizations,
+    # GPU utilities (v0.5.1)
+    get_recommended_gpu_stabilization_time,
+    get_gpu_performance_tier,
 )
 
 # Environment detection
@@ -123,6 +127,9 @@ __all__ = [
     'save_nifti',
     'extract_zip',
     'find_dicom_root',
+    # Preloader (v0.5.1)
+    'AsyncNiftiPreloader',
+    'preload_nifti_batch',
 
     # Hardware
     'detect_hardware',
@@ -135,6 +142,9 @@ __all__ = [
     'CPUOptimizer',
     'get_cpu_optimizer',
     'apply_cpu_optimizations',
+    # GPU utilities (v0.5.1)
+    'get_recommended_gpu_stabilization_time',
+    'get_gpu_performance_tier',
 
     # Environment
     'detect_runtime',
