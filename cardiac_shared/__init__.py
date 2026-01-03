@@ -3,8 +3,9 @@ Cardiac Shared - Common utilities for cardiac imaging projects
 
 This package provides shared IO, hardware detection, environment detection,
 parallel processing, progress tracking, caching, configuration management,
-data registry, data sources, vertebra detection, and tissue classification
-for cardiac imaging analysis across multiple projects.
+data registry, data sources, vertebra detection, tissue classification,
+batch management, and preprocessing pipelines for cardiac imaging analysis
+across multiple projects.
 
 Modules:
 - io: DICOM, NIfTI, and ZIP file handling
@@ -15,13 +16,14 @@ Modules:
 - cache: Result caching with resume capability
 - batch: Batch processing framework
 - config: YAML configuration management
-- data: Intermediate results registry for cross-project sharing
+- data: Intermediate results registry and batch management for cross-project sharing
 - data_sources: Multi-source data management (ZAL, CHD, Normal, Custom)
 - vertebra: Vertebra detection and ROI calculation
 - tissue: Tissue classification and HU filtering (SAT, VAT, IMAT)
+- preprocessing: Unified DICOM conversion and TotalSegmentator pipelines (v0.6.0)
 """
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata
@@ -80,11 +82,18 @@ from cardiac_shared.batch import BatchProcessor, BatchConfig
 # Configuration management
 from cardiac_shared.config import ConfigManager, load_config
 
-# Data registry
+# Data registry and batch management
 from cardiac_shared.data import (
     IntermediateResultsRegistry,
     RegistryEntry,
     get_registry,
+    # Batch management (v0.6.0)
+    BatchManager,
+    BatchManifest,
+    PatientEntry,
+    ConsumerRecord,
+    create_nifti_batch,
+    load_batch,
 )
 
 # Data sources management (v0.5.0)
@@ -114,6 +123,17 @@ from cardiac_shared.tissue import (
     TISSUE_HU_RANGES,
     filter_tissue,
     get_tissue_hu_range,
+)
+
+# Preprocessing pipelines (v0.6.0)
+from cardiac_shared.preprocessing import (
+    DicomConverter,
+    ConversionResult,
+    convert_dicom_to_nifti,
+    SharedPreprocessingPipeline,
+    PreprocessingConfig,
+    PreprocessingResult,
+    create_pipeline,
 )
 
 __all__ = [
@@ -180,6 +200,13 @@ __all__ = [
     'IntermediateResultsRegistry',
     'RegistryEntry',
     'get_registry',
+    # Batch management (v0.6.0)
+    'BatchManager',
+    'BatchManifest',
+    'PatientEntry',
+    'ConsumerRecord',
+    'create_nifti_batch',
+    'load_batch',
 
     # Data sources (v0.5.0)
     'DataSourceManager',
@@ -203,4 +230,13 @@ __all__ = [
     'TISSUE_HU_RANGES',
     'filter_tissue',
     'get_tissue_hu_range',
+
+    # Preprocessing (v0.6.0)
+    'DicomConverter',
+    'ConversionResult',
+    'convert_dicom_to_nifti',
+    'SharedPreprocessingPipeline',
+    'PreprocessingConfig',
+    'PreprocessingResult',
+    'create_pipeline',
 ]
