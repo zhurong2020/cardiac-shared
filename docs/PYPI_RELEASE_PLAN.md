@@ -143,10 +143,29 @@ pip install cardiac-shared[gpu]
 
 ## 8. Future Plans
 
-### Potential v1.0.0 additions
-- [ ] `paths/` - Directory structure management
+### v0.5.1 (Next Release) - PATCH: Small Optimizations
+- [ ] `hardware/gpu_utils.py` - GPU stabilization time optimization
+  - `get_recommended_gpu_stabilization_time()` - Dynamic wait time based on GPU model
+- [ ] `io/preloader.py` - Async NIfTI preloader (optional)
+  - `AsyncNiftiPreloader` - Background preloading with LRU cache
+- **Expected benefit**: ~5-10% speedup for TotalSegmentator pipeline
+- **Reference**: [ROADMAP_v0.6.0_AND_BEYOND.md](ROADMAP_v0.6.0_AND_BEYOND.md)
+
+### v0.6.0 - MINOR: New Features
+- [ ] `preprocessing/dicom.py` - DICOM deduplication module
+- [ ] `io/nifti.py` - Add `validate_nifti()` function
+- [ ] `data/external_registry.py` - External datasets registry
+  - Stanford COCA, TotalSegmentator, NLST, AMOS22 support
+
+### v0.7.0 - MINOR: Infrastructure
+- [ ] `paths/` - Path management module
 - [ ] `checks/` - Environment prerequisite checking
+
+### v1.0.0 - MAJOR: Stable Release
+- [ ] API freeze and stabilization
 - [ ] `utils/common.py` - Additional utility functions
+- [ ] Comprehensive documentation
+- [ ] 100% test coverage
 
 ### Maintenance
 - Update PyPI on each significant release
