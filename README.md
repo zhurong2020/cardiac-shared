@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.5.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.5.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -33,6 +33,8 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `save_nifti(volume, path)` | Save numpy array as NIfTI |
 | `extract_zip(path)` | Context manager for ZIP extraction |
 | `find_dicom_root(path)` | Find DICOM directory in extracted ZIP |
+| `AsyncNiftiPreloader` | Background NIfTI preloading (v0.5.1) |
+| `preload_nifti_batch()` | Batch preloading convenience function (v0.5.1) |
 
 ### Hardware Module
 
@@ -43,6 +45,8 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `print_hardware_summary(hw)` | Print formatted hardware summary |
 | `get_optimal_config(hw)` | Get optimal inference configuration |
 | `CPUOptimizer` | CPU optimization for hospital deployments |
+| `get_recommended_gpu_stabilization_time()` | Dynamic GPU wait time (v0.5.1) |
+| `get_gpu_performance_tier()` | GPU tier classification (v0.5.1) |
 
 ### Environment Module
 
@@ -325,6 +329,12 @@ print(f"Quality: {metrics.quality_grade}")
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.5.1 (2026-01-03)
+- Added `hardware/gpu_utils.py` (GPU stabilization time optimization)
+- Added `io/preloader.py` (AsyncNiftiPreloader for background preloading)
+- ~5-10% speedup for TotalSegmentator pipelines
+- 38 new unit tests
 
 ### v0.5.0 (2026-01-03)
 - Added `data_sources` module (DataSourceManager for ZAL/CHD/Normal/Custom)
