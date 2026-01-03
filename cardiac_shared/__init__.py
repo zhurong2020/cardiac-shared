@@ -3,7 +3,8 @@ Cardiac Shared - Common utilities for cardiac imaging projects
 
 This package provides shared IO, hardware detection, environment detection,
 parallel processing, progress tracking, caching, configuration management,
-and data registry for cardiac imaging analysis across multiple projects.
+data registry, data sources, vertebra detection, and tissue classification
+for cardiac imaging analysis across multiple projects.
 
 Modules:
 - io: DICOM, NIfTI, and ZIP file handling
@@ -15,9 +16,12 @@ Modules:
 - batch: Batch processing framework
 - config: YAML configuration management
 - data: Intermediate results registry for cross-project sharing
+- data_sources: Multi-source data management (ZAL, CHD, Normal, Custom)
+- vertebra: Vertebra detection and ROI calculation
+- tissue: Tissue classification and HU filtering (SAT, VAT, IMAT)
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata
@@ -79,6 +83,35 @@ from cardiac_shared.data import (
     get_registry,
 )
 
+# Data sources management (v0.5.0)
+from cardiac_shared.data_sources import (
+    DataSourceManager,
+    DataSource,
+    DataSourceStatus,
+    get_source,
+    list_sources,
+)
+
+# Vertebra detection (v0.5.0)
+from cardiac_shared.vertebra import (
+    VertebraDetector,
+    VertebraInfo,
+    VertebraROI,
+    parse_vertebrae,
+    sort_vertebrae,
+    VERTEBRAE_ORDER,
+)
+
+# Tissue classification (v0.5.0)
+from cardiac_shared.tissue import (
+    TissueClassifier,
+    TissueMetrics,
+    FilterStats,
+    TISSUE_HU_RANGES,
+    filter_tissue,
+    get_tissue_hu_range,
+)
+
 __all__ = [
     # Version
     '__version__',
@@ -137,4 +170,27 @@ __all__ = [
     'IntermediateResultsRegistry',
     'RegistryEntry',
     'get_registry',
+
+    # Data sources (v0.5.0)
+    'DataSourceManager',
+    'DataSource',
+    'DataSourceStatus',
+    'get_source',
+    'list_sources',
+
+    # Vertebra (v0.5.0)
+    'VertebraDetector',
+    'VertebraInfo',
+    'VertebraROI',
+    'parse_vertebrae',
+    'sort_vertebrae',
+    'VERTEBRAE_ORDER',
+
+    # Tissue (v0.5.0)
+    'TissueClassifier',
+    'TissueMetrics',
+    'FilterStats',
+    'TISSUE_HU_RANGES',
+    'filter_tissue',
+    'get_tissue_hu_range',
 ]
