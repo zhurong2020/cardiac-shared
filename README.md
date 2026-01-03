@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.5.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.6.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -133,6 +133,29 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `filter_tissue()` | Filter tissue mask by HU range |
 | `get_tissue_hu_range()` | Get HU range for tissue type |
 | `TISSUE_HU_RANGES` | Standard HU ranges for all tissue types |
+
+### Batch Management Module (v0.6.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `BatchManager` | Create and manage batch manifests |
+| `BatchManifest` | Track patients, status, and consumers |
+| `PatientEntry` | Individual patient processing record |
+| `ConsumerRecord` | Module that consumed a batch |
+| `create_nifti_batch()` | Create NIfTI batch manifest |
+| `load_batch()` | Load existing batch manifest |
+
+### Preprocessing Module (v0.6.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `DicomConverter` | Unified DICOM to NIfTI conversion |
+| `ConversionResult` | Conversion result details |
+| `convert_dicom_to_nifti()` | Simple conversion function |
+| `SharedPreprocessingPipeline` | Multi-module preprocessing |
+| `PreprocessingConfig` | Pipeline configuration |
+| `PreprocessingResult` | Preprocessing result details |
+| `create_pipeline()` | Create configured pipeline |
 
 ## Usage Examples
 
@@ -319,6 +342,67 @@ print(f"Mean HU: {metrics.mean_hu:.1f}")
 print(f"Quality: {metrics.quality_grade}")
 ```
 
+### Batch Management (v0.6.0)
+
+```python
+from cardiac_shared.data import BatchManager, create_nifti_batch
+
+# Create batch manager
+manager = BatchManager(output_dir="/data/nifti")
+
+# Create batch for NIfTI conversion
+manifest = manager.create_batch(
+    dataset_id="internal_chd_v1",
+    source_path="/data/dicom/chd",
+    provider="Dr. Chen",
+)
+
+# Check for existing conversion (deduplication)
+existing = manager.find_existing_nifti("10022887", "internal_chd_v1")
+if not existing:
+    # Process and register
+    manager.register_patient(
+        dataset_id="internal_chd_v1",
+        patient_id="10022887",
+        status="success",
+        output_file="10022887.nii.gz",
+        dimensions=[512, 512, 256]
+    )
+
+# Track consumer modules
+manager.register_consumer("internal_chd_v1", "pcfa", "pcfa_run_20260103")
+```
+
+### Preprocessing Pipeline (v0.6.0)
+
+```python
+from cardiac_shared.preprocessing import SharedPreprocessingPipeline, create_pipeline
+
+# Create pipeline
+pipeline = create_pipeline(
+    nifti_root="/data/nifti",
+    segmentation_root="/data/totalsegmentator",
+    totalsegmentator_fast=True,
+)
+
+# Ensure NIfTI exists (converts if needed)
+result = pipeline.ensure_nifti("10022887", "internal_chd_v1", dicom_path)
+print(f"NIfTI: {result.output_path}")
+
+# Ensure TotalSegmentator results exist
+result = pipeline.ensure_totalsegmentator("10022887", "internal_chd_v1")
+print(f"Segmentation: {result.output_path}")
+
+# Get masks for specific module (PCFA needs heart)
+masks = pipeline.get_module_masks("10022887", "internal_chd_v1", "pcfa")
+heart_mask = masks["heart"]
+
+# Validate masks for a module
+valid, missing = pipeline.validate_for_module("10022887", "internal_chd_v1", "pvat")
+if not valid:
+    print(f"Missing masks: {missing}")
+```
+
 ## Projects Using This Package
 
 - [vbca](https://github.com/zhurong2020/vbca) - Vertebral Body Composition Analysis
@@ -329,6 +413,15 @@ print(f"Quality: {metrics.quality_grade}")
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.6.0 (2026-01-03)
+- Added `data/batch_manager.py` (BatchManager, BatchManifest for batch tracking)
+- Added `preprocessing/dicom_converter.py` (DicomConverter for unified DICOM->NIfTI)
+- Added `preprocessing/pipeline.py` (SharedPreprocessingPipeline for multi-module preprocessing)
+- Manifest-based batch tracking with consumer lineage
+- Automatic deduplication for NIfTI conversion
+- Module-specific mask requirements (PCFA, PVAT, VBCA, Chamber)
+- 40 new unit tests (100% pass)
 
 ### v0.5.1 (2026-01-03)
 - Added `hardware/gpu_utils.py` (GPU stabilization time optimization)
