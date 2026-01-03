@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.4.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.5.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -98,6 +98,37 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `IntermediateResultsRegistry` | Cross-project data discovery and sharing |
 | `RegistryEntry` | Dataclass for registry entries |
 | `get_registry()` | Get singleton registry instance |
+
+### Data Sources Module (v0.5.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `DataSourceManager` | Multi-source data management (ZAL/CHD/Normal/Custom) |
+| `DataSource` | Configuration for a single data source |
+| `DataSourceStatus` | Status check result for a data source |
+| `get_source()` | Get data source from default manager |
+| `list_sources()` | List all configured data sources |
+
+### Vertebra Module (v0.5.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `VertebraDetector` | Detect and analyze vertebrae from TotalSegmentator output |
+| `VertebraInfo` | Vertebra metadata (center slice, volume, etc.) |
+| `VertebraROI` | Region of interest around a vertebra |
+| `parse_vertebrae()` | Parse vertebra names from labels directory |
+| `sort_vertebrae()` | Sort vertebrae cranial to caudal |
+
+### Tissue Module (v0.5.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `TissueClassifier` | Tissue-specific HU filtering (Alberta Protocol 2024) |
+| `TissueMetrics` | Metrics for a tissue type (area, HU, quality) |
+| `FilterStats` | Statistics from HU filtering |
+| `filter_tissue()` | Filter tissue mask by HU range |
+| `get_tissue_hu_range()` | Get HU range for tissue type |
+| `TISSUE_HU_RANGES` | Standard HU ranges for all tissue types |
 
 ## Usage Examples
 
@@ -213,6 +244,77 @@ available = registry.list_available('segmentation')
 suggestion = registry.suggest_input('pcfa', 'heart_masks', 'chd')
 ```
 
+### Data Source Management (v0.5.0)
+
+```python
+from cardiac_shared.data_sources import DataSourceManager
+
+# Load from project config
+manager = DataSourceManager('/path/to/data_sources.yaml')
+
+# Or use project auto-discovery
+manager = DataSourceManager.from_project('vbca')
+
+# Get data source
+source = manager.get_source('zal')
+print(f"Input: {source.input_dir}")
+print(f"Files: {source.file_count()}")
+
+# Get input files
+for file in source.get_files(limit=10):
+    process(file)
+
+# Check all sources status
+manager.print_status()
+```
+
+### Vertebra Detection (v0.5.0)
+
+```python
+from cardiac_shared.vertebra import VertebraDetector, parse_vertebrae
+import numpy as np
+
+# Simple parsing
+vertebrae = parse_vertebrae('/path/to/labels')
+print(f"Found: {vertebrae}")  # ['T10', 'T11', 'T12', 'L1']
+
+# Full analysis
+detector = VertebraDetector()
+vertebrae_info = detector.find_vertebrae('/path/to/labels')
+
+for v in vertebrae_info:
+    print(f"{v.name}: center slice {v.center_slice}")
+
+# Get center slice from mask
+mask = np.load('vertebrae_T12.npy')
+center = detector.get_center_slice(mask)
+```
+
+### Tissue Classification (v0.5.0)
+
+```python
+from cardiac_shared.tissue import TissueClassifier, filter_tissue, TISSUE_HU_RANGES
+import numpy as np
+
+# Check HU ranges
+print(TISSUE_HU_RANGES['skeletal_muscle']['range'])  # (-29, 150)
+
+# Filter tissue by HU
+filtered_mask, stats = filter_tissue(ct_array, mask, 'skeletal_muscle')
+print(f"Retention: {stats.retention_pct:.1f}%")
+
+# Full metrics calculation
+classifier = TissueClassifier()
+metrics = classifier.calculate_metrics(
+    ct_array, mask, 'skeletal_muscle',
+    spacing=(1.0, 0.5, 0.5),
+    slice_idx=50  # Single slice
+)
+print(f"Area: {metrics.area_cm2:.1f} cm^2")
+print(f"Mean HU: {metrics.mean_hu:.1f}")
+print(f"Quality: {metrics.quality_grade}")
+```
+
 ## Projects Using This Package
 
 - [vbca](https://github.com/zhurong2020/vbca) - Vertebral Body Composition Analysis
@@ -223,6 +325,12 @@ suggestion = registry.suggest_input('pcfa', 'heart_masks', 'chd')
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.5.0 (2026-01-03)
+- Added `data_sources` module (DataSourceManager for ZAL/CHD/Normal/Custom)
+- Added `vertebra` module (VertebraDetector, ROI calculation)
+- Added `tissue` module (TissueClassifier, Alberta Protocol 2024 HU ranges)
+- 44 new unit tests (100% pass)
 
 ### v0.4.0 (2026-01-02)
 - Added `data` module (IntermediateResultsRegistry)
