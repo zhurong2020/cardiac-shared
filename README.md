@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.6.3 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.6.4 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -144,6 +144,19 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `ConsumerRecord` | Module that consumed a batch |
 | `create_nifti_batch()` | Create NIfTI batch manifest |
 | `load_batch()` | Load existing batch manifest |
+
+### Batch Discovery Module (v0.6.4)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `BatchDiscovery` | Discover and select from multiple processing batches |
+| `BatchInfo` | Information about a discovered batch |
+| `PatientBatchRecord` | Patient record within a batch |
+| `discover_batches()` | Convenience function to discover batches |
+| `list_batches()` | List all discovered batch IDs |
+| `find_patient()` | Find a patient across all batches |
+| `select_latest_batch()` | Select the latest batch matching criteria |
+| `get_patient_coverage()` | Check coverage of patients across batches |
 
 ### Preprocessing Module (v0.6.0)
 
@@ -373,6 +386,35 @@ if not existing:
 manager.register_consumer("internal_chd_v1", "pcfa", "pcfa_run_20260103")
 ```
 
+### Batch Discovery (v0.6.4)
+
+```python
+from cardiac_shared.data import BatchDiscovery
+
+# Discover all TotalSegmentator batches
+discovery = BatchDiscovery("/data/totalsegmentator")
+
+# List all available batches
+for batch_id in discovery.list_batches(prefix="organs_chd"):
+    info = discovery.get_batch_info(batch_id)
+    print(f"{batch_id}: {info['total_patients']} patients, created {info['created_at']}")
+
+# Select the latest batch for CHD
+batch = discovery.select_latest_batch(prefix="organs_chd", require_success_count=100)
+print(f"Selected: {batch.batch_id}")
+
+# Find a patient across all batches
+records = discovery.find_patient("10022887")
+if records:
+    latest = records[0]  # Most recent
+    heart_mask = latest.patient_path / "heart.nii.gz"
+    print(f"Found in {latest.batch_id}: {heart_mask}")
+
+# Check coverage for a patient list
+coverage = discovery.get_patient_coverage(patient_ids, batch_prefix="organs_chd")
+print(f"Coverage: {coverage['coverage_rate']:.1f}% ({coverage['covered']}/{coverage['total']})")
+```
+
 ### Preprocessing Pipeline (v0.6.0)
 
 ```python
@@ -413,6 +455,16 @@ if not valid:
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.6.4 (2026-01-04)
+- **NEW**: `BatchDiscovery` module for dynamic batch discovery and selection
+- `BatchDiscovery`: Scan directories and discover all batches with manifest.json
+- `list_batches()`: List all discovered batch IDs with filtering
+- `find_patient()`: Find a patient across all batches
+- `select_latest_batch()`: Select the latest batch matching criteria
+- `get_patient_coverage()`: Check how many patients are covered by existing batches
+- `add_batch_directory()`: Manually add batch even without manifest
+- **Use case**: When running PCFA after VBCA, select specific batch version to use
 
 ### v0.6.3 (2026-01-04)
 - **NEW**: Registry-based auto-discovery in SharedPreprocessingPipeline

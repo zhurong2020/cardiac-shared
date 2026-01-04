@@ -5,6 +5,7 @@ Provides:
 - IntermediateResultsRegistry: Cross-project data discovery and sharing
 - BatchManager: Batch processing with manifest tracking
 - BatchManifest: Manifest data structure for batch outputs
+- BatchDiscovery: Dynamic batch discovery and selection (v0.6.4)
 """
 
 from .registry import (
@@ -22,6 +23,13 @@ from .batch_manager import (
     load_batch,
 )
 
+from .batch_discovery import (
+    BatchDiscovery,
+    BatchInfo,
+    PatientBatchRecord,
+    discover_batches,
+)
+
 __all__ = [
     # Registry
     'IntermediateResultsRegistry',
@@ -34,4 +42,9 @@ __all__ = [
     'ConsumerRecord',
     'create_nifti_batch',
     'load_batch',
+    # Batch Discovery (v0.6.4)
+    'BatchDiscovery',
+    'BatchInfo',
+    'PatientBatchRecord',
+    'discover_batches',
 ]
