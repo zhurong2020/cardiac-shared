@@ -62,6 +62,11 @@ class PreprocessingConfig:
     # GPU stabilization
     gpu_stabilization_time: float = 2.0  # seconds to wait between TotalSegmentator runs
 
+    # v0.6.3: Registry-based auto-discovery
+    use_registry: bool = True  # Check IntermediateResultsRegistry for existing results
+    registry_config_path: Optional[Path] = None  # Custom registry config path
+    fallback_segmentation_paths: Optional[List[Path]] = None  # Additional paths to search
+
 
 @dataclass
 class PreprocessingResult:
@@ -182,6 +187,18 @@ class SharedPreprocessingPipeline:
         # Batch managers for tracking
         self._nifti_managers: Dict[str, BatchManager] = {}
         self._seg_managers: Dict[str, BatchManager] = {}
+
+        # v0.6.3: Initialize registry for auto-discovery
+        self._registry = None
+        if self.config.use_registry:
+            try:
+                from cardiac_shared.data.registry import get_registry
+                self._registry = get_registry(
+                    config_path=self.config.registry_config_path
+                )
+                self._log("[i] Registry loaded for auto-discovery")
+            except Exception as e:
+                self._log(f"[!] Could not load registry: {e}")
 
     def _log(self, message: str) -> None:
         """Print message if verbose"""
@@ -388,6 +405,117 @@ class SharedPreprocessingPipeline:
         return None
 
     # =========================================================================
+    # Registry-based Auto-Discovery (v0.6.3)
+    # =========================================================================
+
+    def find_existing_segmentation(
+        self,
+        patient_id: str,
+        dataset_id: str,
+        mask_name: str = "heart",
+    ) -> Optional[Path]:
+        """
+        Find existing segmentation from registry or fallback paths
+
+        This method searches for pre-existing TotalSegmentator outputs:
+        1. IntermediateResultsRegistry (cross-project discovery)
+        2. Fallback paths (configured in PreprocessingConfig)
+        3. Local segmentation_root
+
+        Args:
+            patient_id: Patient identifier
+            dataset_id: Dataset identifier (used for registry key construction)
+            mask_name: Mask to verify exists (default: "heart")
+
+        Returns:
+            Path to segmentation directory if found, None otherwise
+
+        Example:
+            >>> seg_path = pipeline.find_existing_segmentation("10022887", "chd")
+            >>> if seg_path:
+            ...     heart_mask = seg_path / "heart.nii.gz"
+        """
+        # Extract cohort from dataset_id (e.g., "chd_pilot_v4" -> "chd")
+        cohort = dataset_id.split("_")[0] if "_" in dataset_id else dataset_id
+
+        # 1. Check registry
+        if self._registry:
+            registry_keys = [
+                f"segmentation.totalsegmentator_organs.{cohort}_v2",
+                f"segmentation.totalsegmentator_organs.{cohort}_v1",
+                f"segmentation.totalsegmentator_organs.{cohort}",
+            ]
+
+            for key in registry_keys:
+                if self._registry.exists(key):
+                    seg_root = self._registry.get_path(key)
+                    if seg_root:
+                        patient_dir = seg_root / patient_id
+                        mask_path = patient_dir / f"{mask_name}.nii.gz"
+                        if mask_path.exists():
+                            self._log(f"  [Registry] Found: {key}/{patient_id}")
+                            return patient_dir
+
+        # 2. Check fallback paths
+        if self.config.fallback_segmentation_paths:
+            for fallback in self.config.fallback_segmentation_paths:
+                if fallback.exists():
+                    patient_dir = fallback / patient_id
+                    mask_path = patient_dir / f"{mask_name}.nii.gz"
+                    if mask_path.exists():
+                        self._log(f"  [Fallback] Found: {fallback.name}/{patient_id}")
+                        return patient_dir
+
+        # 3. Check local segmentation_root
+        if self.config.segmentation_root:
+            local_seg_dir = self._get_segmentation_dir(dataset_id)
+            patient_dir = local_seg_dir / patient_id
+            mask_path = patient_dir / f"{mask_name}.nii.gz"
+            if mask_path.exists():
+                self._log(f"  [Local] Found: {patient_dir.name}")
+                return patient_dir
+
+        return None
+
+    def get_reuse_summary(
+        self,
+        patient_ids: List[str],
+        dataset_id: str,
+        mask_name: str = "heart",
+    ) -> Dict[str, Any]:
+        """
+        Get summary of reuse potential for a batch of patients
+
+        Args:
+            patient_ids: List of patient IDs to check
+            dataset_id: Dataset identifier
+            mask_name: Mask to check for
+
+        Returns:
+            Summary dictionary with statistics
+        """
+        reusable = 0
+        need_processing = 0
+        source_paths = set()
+
+        for patient_id in patient_ids:
+            seg_path = self.find_existing_segmentation(patient_id, dataset_id, mask_name)
+            if seg_path:
+                reusable += 1
+                source_paths.add(str(seg_path.parent))
+            else:
+                need_processing += 1
+
+        return {
+            "total": len(patient_ids),
+            "reusable": reusable,
+            "need_processing": need_processing,
+            "reuse_rate": reusable / len(patient_ids) * 100 if patient_ids else 0,
+            "source_paths": list(source_paths),
+            "estimated_time_saved_hours": reusable * 80 / 3600,  # ~80s per TotalSeg run
+        }
+
+    # =========================================================================
     # TotalSegmentator
     # =========================================================================
 
@@ -396,14 +524,26 @@ class SharedPreprocessingPipeline:
         patient_id: str,
         dataset_id: str,
         nifti_path: Optional[Union[str, Path]] = None,
+        check_registry: bool = True,
     ) -> PreprocessingResult:
         """
         Ensure TotalSegmentator results exist for patient
+
+        v0.6.3: Now automatically checks IntermediateResultsRegistry for
+        existing results from other modules (e.g., VBCA) before running
+        TotalSegmentator. This enables cross-project result sharing.
+
+        Search order:
+        1. Registry (cross-project discovery)
+        2. Fallback paths (configured in config)
+        3. Local segmentation_root
+        4. Run TotalSegmentator if not found
 
         Args:
             patient_id: Patient identifier
             dataset_id: Dataset identifier
             nifti_path: Path to input NIfTI (optional, will look up if not provided)
+            check_registry: Whether to check registry for existing results (default: True)
 
         Returns:
             PreprocessingResult with segmentation directory
@@ -412,7 +552,21 @@ class SharedPreprocessingPipeline:
         seg_dir = self._get_segmentation_dir(dataset_id)
         patient_seg_dir = seg_dir / patient_id
 
-        # Check if already exists
+        # v0.6.3: Check registry for existing results from other modules
+        if check_registry and self.config.use_registry and not self.config.force_reprocess:
+            existing_seg = self.find_existing_segmentation(patient_id, dataset_id)
+            if existing_seg and existing_seg != patient_seg_dir:
+                # Found in registry/fallback - use it
+                return PreprocessingResult(
+                    patient_id=patient_id,
+                    stage="totalsegmentator",
+                    success=True,
+                    output_path=existing_seg,
+                    was_cached=True,
+                    processing_time=time.time() - start_time,
+                )
+
+        # Check if already exists in local directory
         if patient_seg_dir.exists() and not self.config.force_reprocess:
             # Verify at least heart mask exists
             heart_mask = patient_seg_dir / "heart.nii.gz"

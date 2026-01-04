@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.6.2 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.6.3 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -413,6 +413,15 @@ if not valid:
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.6.3 (2026-01-04)
+- **NEW**: Registry-based auto-discovery in SharedPreprocessingPipeline
+- `find_existing_segmentation()`: Search registry/fallback for existing TotalSeg outputs
+- `get_reuse_summary()`: Analyze reuse potential for batch processing
+- `ensure_totalsegmentator()`: Now auto-checks registry before running TotalSegmentator
+- New config options: `use_registry`, `registry_config_path`, `fallback_segmentation_paths`
+- **Impact**: PCFA can now automatically reuse VBCA's TotalSegmentator outputs
+- **Time savings**: ~80s per patient when reusing existing segmentation
 
 ### v0.6.2 (2026-01-04)
 - Added `totalsegmentator_roi_subset` parameter to PreprocessingConfig
