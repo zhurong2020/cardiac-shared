@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.6.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.6.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -413,6 +413,11 @@ if not valid:
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.6.1 (2026-01-03)
+- Fix: Auto-detect TotalSegmentator executable path
+- SharedPreprocessingPipeline now finds TotalSegmentator in Python env or PATH
+- Added `totalsegmentator_path` config option for custom paths
 
 ### v0.6.0 (2026-01-03)
 - Added `data/batch_manager.py` (BatchManager, BatchManifest for batch tracking)
