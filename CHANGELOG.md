@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-01-03
+
+### Fixed
+- TotalSegmentator executable auto-detection
+  - Pipeline now finds TotalSegmentator in current Python environment
+  - Falls back to system PATH if not found
+  - Fixes "No such file or directory: 'TotalSegmentator'" error
+
+---
+
+## [0.6.0] - 2026-01-03
+
+### Added
+- Batch management module (`cardiac_shared.data.batch_manager`)
+  - `BatchManager` - Create/manage batch manifests
+  - `BatchManifest` - Track patients, processing status, consumers
+  - Deduplication support for NIfTI conversion
+  - Consumer tracking for data lineage
+- DICOM converter module (`cardiac_shared.preprocessing.dicom_converter`)
+  - `DicomConverter` - Single patient and batch conversion
+  - ZIP archive support
+  - Automatic series selection (prefer thorax)
+  - Integration with BatchManager for tracking
+- Shared preprocessing pipeline (`cardiac_shared.preprocessing.pipeline`)
+  - `SharedPreprocessingPipeline` - Multi-module preprocessing
+  - Automatic mask discovery (heart, aorta, vertebrae)
+  - TotalSegmentator integration with caching
+  - Module-specific mask requirements (PCFA, PVAT, VBCA, Chamber)
+
+### Changed
+- Added 40 new unit tests
+
+---
+
 ## [0.5.1] - 2026-01-03
 
 ### Added
