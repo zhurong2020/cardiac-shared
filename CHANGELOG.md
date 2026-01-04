@@ -5,7 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.2] - 2026-01-03
+## [0.6.4] - 2026-01-04
+
+### Added
+- BatchDiscovery module (`cardiac_shared.data.batch_discovery`)
+  - `BatchDiscovery` - Scan directories for batch manifests
+  - `BatchInfo` - Data class for batch metadata
+  - `PatientBatchRecord` - Track patient across batches
+  - `list_batches()` - List all discovered batches with filtering
+  - `find_patient()` - Find patient across all batches
+  - `select_latest_batch()` - Auto-select most recent batch
+  - `get_patient_coverage()` - Analyze batch coverage for patient list
+  - Cross-batch patient lookup for multi-version support
+
+### Changed
+- Updated `data/__init__.py` to export BatchDiscovery classes
+
+---
+
+## [0.6.3] - 2026-01-04
+
+### Added
+- Registry-based auto-discovery in SharedPreprocessingPipeline
+  - `find_existing_segmentation()` - Search registry/fallback for existing TotalSeg outputs
+  - `get_reuse_summary()` - Analyze reuse potential for batch processing
+  - `ensure_totalsegmentator()` now auto-checks registry before running TotalSegmentator
+- New PreprocessingConfig options:
+  - `use_registry` - Enable auto-discovery (default: True)
+  - `registry_config_path` - Custom registry config path
+  - `fallback_segmentation_paths` - Additional search paths
+
+### Performance
+- **97% time savings** when reusing existing segmentation results
+- PCFA: 11+ hours → ~25 minutes for 464 cases (with VBCA results available)
+
+---
+
+## [0.6.2] - 2026-01-04
 
 ### Added
 - TotalSegmentator `--roi_subset` support for single-organ segmentation
