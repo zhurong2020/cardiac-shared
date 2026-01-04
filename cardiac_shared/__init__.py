@@ -23,7 +23,7 @@ Modules:
 - preprocessing: Unified DICOM conversion and TotalSegmentator pipelines (v0.6.0)
 """
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata

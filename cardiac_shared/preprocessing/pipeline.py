@@ -52,6 +52,8 @@ class PreprocessingConfig:
     totalsegmentator_device: str = "gpu"  # "gpu", "cpu"
     totalsegmentator_fast: bool = True  # Use --fast mode
     totalsegmentator_path: Optional[str] = None  # Custom path to TotalSegmentator executable
+    totalsegmentator_roi_subset: Optional[str] = None  # ROI subset (e.g., "heart" for PCFA)
+    # v0.6.2: --roi_subset provides 1.5-2x speedup for single-organ tasks
 
     # Processing options
     force_reprocess: bool = False
@@ -455,6 +457,9 @@ class SharedPreprocessingPipeline:
 
             if self.config.totalsegmentator_fast:
                 cmd.append("--fast")
+
+            if self.config.totalsegmentator_roi_subset:
+                cmd.extend(["--roi_subset", self.config.totalsegmentator_roi_subset])
 
             if self.config.totalsegmentator_device == "cpu":
                 cmd.extend(["--device", "cpu"])
