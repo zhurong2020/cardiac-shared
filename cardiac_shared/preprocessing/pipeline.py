@@ -51,6 +51,7 @@ class PreprocessingConfig:
     totalsegmentator_task: str = "total"  # "total", "fast", "body"
     totalsegmentator_device: str = "gpu"  # "gpu", "cpu"
     totalsegmentator_fast: bool = True  # Use --fast mode
+    totalsegmentator_path: Optional[str] = None  # Custom path to TotalSegmentator executable
 
     # Processing options
     force_reprocess: bool = False
@@ -184,6 +185,45 @@ class SharedPreprocessingPipeline:
         """Print message if verbose"""
         if self.config.verbose:
             print(message)
+
+    def _find_totalsegmentator(self) -> Optional[str]:
+        """
+        Find TotalSegmentator executable
+
+        Priority:
+        1. Custom path from config
+        2. Current Python environment (sys.executable)
+        3. System PATH
+
+        Returns:
+            Path to TotalSegmentator executable, or None if not found
+        """
+        import sys
+        import shutil
+
+        # 1. Custom path from config
+        if self.config.totalsegmentator_path:
+            custom_path = Path(self.config.totalsegmentator_path)
+            if custom_path.exists():
+                return str(custom_path)
+
+        # 2. Current Python environment
+        python_dir = Path(sys.executable).parent
+        possible_paths = [
+            python_dir / "TotalSegmentator",      # Linux/WSL
+            python_dir / "TotalSegmentator.exe",  # Windows
+        ]
+
+        for p in possible_paths:
+            if p.exists():
+                return str(p)
+
+        # 3. System PATH
+        system_cmd = shutil.which("TotalSegmentator")
+        if system_cmd:
+            return system_cmd
+
+        return None
 
     def _get_nifti_dir(self, dataset_id: str) -> Path:
         """Get NIfTI directory for dataset"""
@@ -401,8 +441,13 @@ class SharedPreprocessingPipeline:
         patient_seg_dir.mkdir(parents=True, exist_ok=True)
 
         try:
+            # Find TotalSegmentator executable
+            totalseg_cmd = self._find_totalsegmentator()
+            if not totalseg_cmd:
+                raise RuntimeError("TotalSegmentator not found. Install with: pip install TotalSegmentator")
+
             cmd = [
-                "TotalSegmentator",
+                totalseg_cmd,
                 "-i", str(nifti_path),
                 "-o", str(patient_seg_dir),
                 "--task", self.config.totalsegmentator_task,
