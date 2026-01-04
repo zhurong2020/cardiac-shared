@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.6.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.6.2 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -413,6 +413,13 @@ if not valid:
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v0.6.2 (2026-01-04)
+- Added `totalsegmentator_roi_subset` parameter to PreprocessingConfig
+- Enables TotalSegmentator `--roi_subset` for single-organ segmentation
+- **Performance**: 1.5-2x speedup for single-organ tasks (68s -> 43s on RTX 2060)
+- PCFA results consistent (<0.5% difference vs full segmentation)
+- 40-case validation test: 97.5% success rate
 
 ### v0.6.1 (2026-01-03)
 - Fix: Auto-detect TotalSegmentator executable path
