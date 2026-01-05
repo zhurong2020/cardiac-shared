@@ -5,7 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] - 2026-01-04
+**See [VERSIONING.md](VERSIONING.md) for version management policy.**
+
+---
+
+## [0.8.1] - 2026-01-04
+
+### Changed
+- Stable release of configuration-driven DatasetRegistry
+- Added VERSIONING.md with version management policy
+
+### Note
+- Versions 0.7.0, 0.7.1, 0.8.0 have been **yanked** from PyPI
+- See VERSIONING.md for details on yanked versions
+
+---
+
+## [0.8.0] - 2026-01-04 (YANKED)
 
 ### Changed (BREAKING)
 - **Dataset Registry refactored to configuration-driven approach**
@@ -44,14 +60,14 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
 
 ---
 
-## [0.7.1] - 2026-01-04 (Superseded by 0.8.0)
+## [0.7.1] - 2026-01-04 (YANKED)
 
 ### Fixed
 - Internal dataset patient count corrected to 765 unique patients
 
 ---
 
-## [0.7.0] - 2026-01-04 (Superseded by 0.8.0)
+## [0.7.0] - 2026-01-04 (YANKED)
 
 ### Added
 - Dataset Registry module (initial implementation with hardcoded data)

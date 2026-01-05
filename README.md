@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.8.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.8.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
