@@ -6,6 +6,7 @@ Provides:
 - BatchManager: Batch processing with manifest tracking
 - BatchManifest: Manifest data structure for batch outputs
 - BatchDiscovery: Dynamic batch discovery and selection (v0.6.4)
+- DatasetRegistry: Unified dataset definitions with patient counts (v0.7.0)
 """
 
 from .registry import (
@@ -30,6 +31,22 @@ from .batch_discovery import (
     discover_batches,
 )
 
+from .datasets import (
+    Dataset,
+    DatasetStatus,
+    DatasetCategory,
+    SliceThickness,
+    DatasetRegistry,
+    get_dataset_registry,
+    get_dataset,
+    get_patient_count,
+    list_datasets,
+    print_dataset_summary,
+    INTERNAL_DATASETS,
+    EXTERNAL_DATASETS,
+    ALL_DATASETS,
+)
+
 __all__ = [
     # Registry
     'IntermediateResultsRegistry',
@@ -47,4 +64,18 @@ __all__ = [
     'BatchInfo',
     'PatientBatchRecord',
     'discover_batches',
+    # Dataset Registry (v0.7.0)
+    'Dataset',
+    'DatasetStatus',
+    'DatasetCategory',
+    'SliceThickness',
+    'DatasetRegistry',
+    'get_dataset_registry',
+    'get_dataset',
+    'get_patient_count',
+    'list_datasets',
+    'print_dataset_summary',
+    'INTERNAL_DATASETS',
+    'EXTERNAL_DATASETS',
+    'ALL_DATASETS',
 ]

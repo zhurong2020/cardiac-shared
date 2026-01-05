@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.6.4 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.7.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -157,6 +157,26 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `find_patient()` | Find a patient across all batches |
 | `select_latest_batch()` | Select the latest batch matching criteria |
 | `get_patient_coverage()` | Check coverage of patients across batches |
+
+### Dataset Registry Module (v0.7.0)
+
+| Class/Function | Description |
+|----------------|-------------|
+| `DatasetRegistry` | Unified registry for dataset definitions |
+| `Dataset` | Dataset definition with patient count and metadata |
+| `DatasetStatus` | Processing status (PLANNED, COMPLETED, VALIDATED) |
+| `DatasetCategory` | Category (INTERNAL, EXTERNAL, FUTURE) |
+| `get_dataset_registry()` | Get singleton registry instance |
+| `get_dataset(id)` | Get dataset by ID (e.g., 'internal.chd') |
+| `get_patient_count(id)` | Get patient count for a dataset |
+| `list_datasets(category)` | List datasets, optionally by category |
+| `print_dataset_summary()` | Print formatted dataset summary |
+
+**Authoritative Patient Counts**:
+- Internal: CHD 489 + Normal 277 = **766 patients**
+- NLST: Batch1-4 (108+92+402+255) = **857 patients**
+- COCA: Gated 444 + Nongated 213 = **657 patients**
+- TotalSegmentator: **1,228 patients** (planned)
 
 ### Preprocessing Module (v0.6.0)
 

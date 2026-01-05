@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-01-04
+
+### Added
+- Dataset Registry module (`cardiac_shared.data.datasets`)
+  - `DatasetRegistry` - Unified registry for dataset definitions
+  - `Dataset` - Dataclass with patient count, status, metadata
+  - `DatasetStatus` - Status enum (PLANNED, IN_PROGRESS, COMPLETED, VALIDATED, ARCHIVED)
+  - `DatasetCategory` - Category enum (INTERNAL, EXTERNAL, FUTURE)
+  - `SliceThickness` - Slice thickness configuration for paired scans
+  - `get_dataset_registry()` - Singleton access function
+  - `get_dataset()`, `get_patient_count()`, `list_datasets()` - Convenience functions
+  - `print_dataset_summary()` - Formatted summary output
+  - Authoritative patient counts from ai-cac-research:
+    - Internal: CHD 489 + Normal 277 = 766 patients
+    - NLST: 857 patients (4 batches: 108+92+402+255)
+    - COCA: 657 patients (Gated 444 + Nongated 213)
+    - TotalSegmentator: 1,228 patients (planned)
+
+### Changed
+- Version bumped to 0.7.0
+- Added 38 new unit tests for DatasetRegistry
+
+---
+
 ## [0.6.4] - 2026-01-04
 
 ### Added
