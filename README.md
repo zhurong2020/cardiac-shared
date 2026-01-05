@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.7.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.7.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -173,7 +173,7 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `print_dataset_summary()` | Print formatted dataset summary |
 
 **Authoritative Patient Counts**:
-- Internal: CHD 489 + Normal 277 = **766 patients**
+- Internal: **765 unique patients** (766 cases: CHD 489 + Normal 277, 1 overlap)
 - NLST: Batch1-4 (108+92+402+255) = **857 patients**
 - COCA: Gated 444 + Nongated 213 = **657 patients**
 - TotalSegmentator: **1,228 patients** (planned)

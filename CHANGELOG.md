@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-01-04
+
+### Fixed
+- Internal dataset patient count corrected to 765 unique patients (was 766)
+  - 766 cases total (CHD 489 + Normal 277)
+  - 1 patient appears in both groups (duplicate scan)
+  - `internal.all.patient_count` now returns 765 (unique patients)
+  - Added `metadata.total_cases = 766` for case-level count
+
+---
+
 ## [0.7.0] - 2026-01-04
 
 ### Added
@@ -18,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `get_dataset()`, `get_patient_count()`, `list_datasets()` - Convenience functions
   - `print_dataset_summary()` - Formatted summary output
   - Authoritative patient counts from ai-cac-research:
-    - Internal: CHD 489 + Normal 277 = 766 patients
+    - Internal: 765 unique patients (766 cases: CHD 489 + Normal 277)
     - NLST: 857 patients (4 batches: 108+92+402+255)
     - COCA: 657 patients (Gated 444 + Nongated 213)
     - TotalSegmentator: 1,228 patients (planned)

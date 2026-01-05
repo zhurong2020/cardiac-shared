@@ -96,8 +96,8 @@ class TestInternalDatasets:
         assert INTERNAL_DATASETS["internal.normal"].patient_count == 277
 
     def test_internal_all_count(self):
-        """All internal should have 766 patients (489 + 277)"""
-        assert INTERNAL_DATASETS["internal.all"].patient_count == 766
+        """All internal should have 765 unique patients (766 cases, 1 duplicate)"""
+        assert INTERNAL_DATASETS["internal.all"].patient_count == 765
 
     def test_internal_all_sub_batches(self):
         """internal.all should reference chd and normal"""
@@ -218,7 +218,7 @@ class TestDatasetRegistry:
     def test_get_total_patients(self):
         registry = DatasetRegistry()
         total = registry.get_total_patients(["internal.chd", "internal.normal"])
-        assert total == 766
+        assert total == 766  # Cases count (489 + 277), not unique patients
 
     def test_get_by_category(self):
         registry = DatasetRegistry()
@@ -239,14 +239,14 @@ class TestDatasetRegistry:
 
         assert summary["internal"]["chd"] == 489
         assert summary["internal"]["normal"] == 277
-        assert summary["internal"]["total"] == 766
+        assert summary["internal"]["total"] == 765  # Unique patients
 
         assert summary["external"]["nlst"] == 857
         assert summary["external"]["coca"] == 657
         assert summary["external"]["totalsegmentator"] == 1228
 
-        # 766 + 857 + 657 = 2280
-        assert summary["grand_total"]["validated"] == 2280
+        # 765 + 857 + 657 = 2279
+        assert summary["grand_total"]["validated"] == 2279
 
 
 class TestSingletonRegistry:
@@ -264,7 +264,7 @@ class TestSingletonRegistry:
 
     def test_get_patient_count_convenience(self):
         count = get_patient_count("internal.all")
-        assert count == 766
+        assert count == 765  # Unique patients
 
     def test_list_datasets_convenience(self):
         internal = list_datasets("internal")
@@ -288,15 +288,15 @@ class TestDataIntegrity:
         registry = DatasetRegistry()
         summary = registry.summary()
 
-        # Internal: 766
-        assert summary["internal"]["total"] == 766
+        # Internal: 765 unique patients
+        assert summary["internal"]["total"] == 765
 
         # External validated: 857 + 657 = 1514
         external_validated = summary["external"]["nlst"] + summary["external"]["coca"]
         assert external_validated == 1514
 
-        # Grand total validated: 766 + 857 + 657 = 2280
-        assert summary["grand_total"]["validated"] == 2280
+        # Grand total validated: 765 + 857 + 657 = 2279
+        assert summary["grand_total"]["validated"] == 2279
 
-        # Including planned: 2280 + 1228 = 3508
-        assert summary["grand_total"]["including_planned"] == 3508
+        # Including planned: 2279 + 1228 = 3507
+        assert summary["grand_total"]["including_planned"] == 3507

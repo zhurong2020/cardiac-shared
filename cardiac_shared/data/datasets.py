@@ -149,17 +149,18 @@ INTERNAL_DATASETS = {
         id="internal.all",
         name="Internal Dataset (All)",
         description="Complete internal dataset from Dr. Chen",
-        patient_count=766,
+        patient_count=765,  # Unique patients (766 cases, 1 patient has 2 scans)
         category=DatasetCategory.INTERNAL,
         status=DatasetStatus.VALIDATED,
         slice_thickness=SliceThickness(thin="1.0mm/1.5mm", thick="5.0mm"),
         group_tag="internal_all",
         sub_batches=["internal.chd", "internal.normal"],
-        notes="内部数据集全集 - CHD 489例 + Normal 277例 = 766例",
+        notes="内部数据集全集 - 765唯一患者 (766病例: CHD 489 + Normal 277, 1例重叠)",
         metadata={
             "source": "Dr. Chen",
             "paired_scans": True,
-            "unique_patients": 765,  # 1 duplicate
+            "total_cases": 766,  # Total cases (1 patient appears twice)
+            "unique_patients": 765,
             "metadata_coverage": "99.5%",
         }
     ),
@@ -371,7 +372,7 @@ class DatasetRegistry:
                 "totalsegmentator": self.get_patient_count("totalsegmentator"),
             },
             "grand_total": {
-                "validated": internal + nlst + coca,  # 766 + 857 + 657 = 2280
+                "validated": internal + nlst + coca,  # 765 + 857 + 657 = 2279
                 "including_planned": internal + nlst + coca + self.get_patient_count("totalsegmentator"),
             }
         }
@@ -385,7 +386,7 @@ class DatasetRegistry:
         print("\nInternal Datasets (Dr. Chen):")
         print(f"  CHD Group:    {s['internal']['chd']:>5} patients")
         print(f"  Normal Group: {s['internal']['normal']:>5} patients")
-        print(f"  Total:        {s['internal']['total']:>5} patients")
+        print(f"  Total:        {s['internal']['total']:>5} unique patients")
         print("\nExternal Datasets:")
         print(f"  NLST:              {s['external']['nlst']:>5} patients (4 batches)")
         print(f"  COCA:              {s['external']['coca']:>5} patients (Gated + Nongated)")
