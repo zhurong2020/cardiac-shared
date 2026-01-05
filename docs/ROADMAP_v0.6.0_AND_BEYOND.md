@@ -357,8 +357,52 @@ Reference: cardiac-shared/docs/ROADMAP_v0.6.0_AND_BEYOND.md
 
 ---
 
-**Document Version**: 1.1
-**Last Updated**: 2026-01-03
+## 11. Claude Scientific Skills Integration (Future Reference)
+
+**Source**: https://github.com/K-Dense-AI/claude-scientific-skills
+**Local Clone**: `/home/wuxia/projects/claude-scientific-skills/`
+**Evaluated**: 2026-01-05
+
+### 11.1 Modules Worth Porting to cardiac-shared
+
+| claude-scientific-skills | Target Module | Priority | Notes |
+|--------------------------|---------------|----------|-------|
+| pydicom PHI tags | `io/anonymizer.py` | P1 | Complete PHI tag list for HIPAA compliance |
+| pydicom VOI LUT | `io/dicom.py` | P2 | Windowing for CT visualization |
+| scientific-visualization palettes | `visualization/palettes.py` | P2 | Okabe-Ito colorblind-safe palette |
+| statistical-analysis templates | `analysis/statistics.py` | P3 | APA reporting templates |
+| exploratory-data-analysis format detection | `io/format_detector.py` | P3 | Auto-detect 200+ file formats |
+
+### 11.2 Key Code Patterns to Adopt
+
+**Okabe-Ito Colorblind-Safe Palette**:
+```python
+OKABE_ITO = ['#E69F00', '#56B4E9', '#009E73', '#F0E442',
+             '#0072B2', '#D55E00', '#CC79A7', '#000000']
+```
+
+**DICOM PHI Tags for Anonymization**:
+```python
+PHI_TAGS = [
+    'PatientName', 'PatientID', 'PatientBirthDate', 'PatientSex',
+    'PatientAge', 'PatientAddress', 'InstitutionName', 'InstitutionAddress',
+    'ReferringPhysicianName', 'PerformingPhysicianName', 'OperatorsName',
+    'StudyDescription', 'SeriesDescription'
+]
+```
+
+### 11.3 Implementation Plan
+
+| Version | Module | Based On |
+|---------|--------|----------|
+| v0.7.0 | `io/anonymizer.py` | pydicom SKILL.md |
+| v0.8.0 | `visualization/palettes.py` | scientific-visualization SKILL.md |
+| v1.0.0 | Documentation | Multiple SKILLs for best practices |
+
+---
+
+**Document Version**: 1.2
+**Last Updated**: 2026-01-05
 **Author**: Claude Code
 
 *Generated with Claude Code*
