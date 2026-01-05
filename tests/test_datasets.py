@@ -1,10 +1,13 @@
 """
-Unit tests for Dataset Registry module
+Unit tests for Dataset Registry module (v0.8.0 - configuration-driven)
 
-Tests the unified dataset definitions and registry functionality.
+Tests the dataset registry framework with YAML configuration loading.
 """
 
 import pytest
+import tempfile
+import os
+from pathlib import Path
 from cardiac_shared.data.datasets import (
     Dataset,
     DatasetStatus,
@@ -12,13 +15,66 @@ from cardiac_shared.data.datasets import (
     SliceThickness,
     DatasetRegistry,
     get_dataset_registry,
+    load_registry_from_yaml,
     get_dataset,
     get_patient_count,
     list_datasets,
-    INTERNAL_DATASETS,
-    EXTERNAL_DATASETS,
-    ALL_DATASETS,
 )
+
+
+# Sample YAML config for testing
+SAMPLE_CONFIG = """
+datasets:
+  internal.chd:
+    name: "CHD Group"
+    description: "Test CHD dataset"
+    patient_count: 100
+    category: internal
+    status: validated
+    slice_thickness:
+      thin: "1.0mm"
+      thick: "5.0mm"
+    group_tag: "chd"
+    metadata:
+      source: "Test"
+
+  internal.normal:
+    name: "Normal Group"
+    patient_count: 50
+    category: internal
+    status: validated
+
+  external.nlst:
+    name: "NLST Dataset"
+    patient_count: 200
+    category: external
+    status: completed
+    slice_thickness:
+      thin: "2.0mm"
+      thick: "5.0mm"
+
+  external.coca:
+    name: "COCA Dataset"
+    patient_count: 150
+    category: external
+    status: validated
+"""
+
+
+@pytest.fixture
+def temp_config_file():
+    """Create a temporary config file for testing"""
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        f.write(SAMPLE_CONFIG)
+        temp_path = f.name
+    yield temp_path
+    os.unlink(temp_path)
+
+
+@pytest.fixture
+def loaded_registry(temp_config_file):
+    """Create a registry loaded from temp config"""
+    return DatasetRegistry.from_yaml(temp_config_file)
 
 
 class TestSliceThickness:
@@ -39,6 +95,15 @@ class TestSliceThickness:
     def test_slice_thickness_none(self):
         st = SliceThickness()
         assert str(st) == "unknown"
+
+    def test_from_dict(self):
+        st = SliceThickness.from_dict({"thin": "1.0mm", "thick": "5.0mm"})
+        assert st.thin == "1.0mm"
+        assert st.thick == "5.0mm"
+
+    def test_from_dict_none(self):
+        st = SliceThickness.from_dict(None)
+        assert st is None
 
 
 class TestDataset:
@@ -75,228 +140,197 @@ class TestDataset:
         )
         assert ds_single.is_paired is False
 
-        ds_none = Dataset(
-            id="test.none",
-            name="None",
-            description="No thickness",
-            patient_count=100,
-        )
-        assert ds_none.is_paired is False
-
-
-class TestInternalDatasets:
-    """Tests for internal dataset definitions"""
-
-    def test_internal_chd_count(self):
-        """CHD group should have 489 patients"""
-        assert INTERNAL_DATASETS["internal.chd"].patient_count == 489
-
-    def test_internal_normal_count(self):
-        """Normal group should have 277 patients"""
-        assert INTERNAL_DATASETS["internal.normal"].patient_count == 277
-
-    def test_internal_all_count(self):
-        """All internal should have 765 unique patients (766 cases, 1 duplicate)"""
-        assert INTERNAL_DATASETS["internal.all"].patient_count == 765
-
-    def test_internal_all_sub_batches(self):
-        """internal.all should reference chd and normal"""
-        all_ds = INTERNAL_DATASETS["internal.all"]
-        assert "internal.chd" in all_ds.sub_batches
-        assert "internal.normal" in all_ds.sub_batches
-
-    def test_internal_category(self):
-        """All internal datasets should have INTERNAL category"""
-        for ds in INTERNAL_DATASETS.values():
-            assert ds.category == DatasetCategory.INTERNAL
-
-
-class TestExternalDatasets:
-    """Tests for external dataset definitions"""
-
-    def test_nlst_batch_counts(self):
-        """NLST batch counts: 108, 92, 402, 255"""
-        assert EXTERNAL_DATASETS["nlst.batch1"].patient_count == 108
-        assert EXTERNAL_DATASETS["nlst.batch2"].patient_count == 92
-        assert EXTERNAL_DATASETS["nlst.batch3"].patient_count == 402
-        assert EXTERNAL_DATASETS["nlst.batch4"].patient_count == 255
-
-    def test_nlst_all_count(self):
-        """NLST all should have 857 patients"""
-        assert EXTERNAL_DATASETS["nlst.all"].patient_count == 857
-
-    def test_nlst_sum_matches_all(self):
-        """Sum of NLST batches should equal nlst.all"""
-        batch_sum = sum(
-            EXTERNAL_DATASETS[f"nlst.batch{i}"].patient_count
-            for i in range(1, 5)
-        )
-        assert batch_sum == EXTERNAL_DATASETS["nlst.all"].patient_count
-
-    def test_coca_counts(self):
-        """COCA: Gated 444, Nongated 213, All 657"""
-        assert EXTERNAL_DATASETS["coca.gated"].patient_count == 444
-        assert EXTERNAL_DATASETS["coca.nongated"].patient_count == 213
-        assert EXTERNAL_DATASETS["coca.all"].patient_count == 657
-
-    def test_coca_sum_matches_all(self):
-        """Sum of COCA parts should equal coca.all"""
-        coca_sum = (
-            EXTERNAL_DATASETS["coca.gated"].patient_count +
-            EXTERNAL_DATASETS["coca.nongated"].patient_count
-        )
-        assert coca_sum == EXTERNAL_DATASETS["coca.all"].patient_count
-
-    def test_totalsegmentator_count(self):
-        """TotalSegmentator should have 1228 patients"""
-        assert EXTERNAL_DATASETS["totalsegmentator"].patient_count == 1228
-
-    def test_totalsegmentator_planned_status(self):
-        """TotalSegmentator should be in PLANNED status"""
-        assert EXTERNAL_DATASETS["totalsegmentator"].status == DatasetStatus.PLANNED
-
-    def test_external_category(self):
-        """All external datasets should have EXTERNAL category"""
-        for ds in EXTERNAL_DATASETS.values():
-            assert ds.category == DatasetCategory.EXTERNAL
+    def test_from_dict(self):
+        data = {
+            "name": "Test",
+            "patient_count": 100,
+            "category": "external",
+            "status": "validated",
+            "slice_thickness": {"thin": "1.0mm"},
+        }
+        ds = Dataset.from_dict("test.id", data)
+        assert ds.id == "test.id"
+        assert ds.name == "Test"
+        assert ds.patient_count == 100
+        assert ds.category == DatasetCategory.EXTERNAL
+        assert ds.status == DatasetStatus.VALIDATED
 
 
 class TestDatasetRegistry:
     """Tests for DatasetRegistry class"""
 
-    def test_get_existing_dataset(self):
+    def test_empty_registry(self):
         registry = DatasetRegistry()
-        ds = registry.get("internal.chd")
-        assert ds is not None
-        assert ds.patient_count == 489
+        assert len(registry) == 0
+        assert registry.get("nonexistent") is None
 
-    def test_get_nonexistent_dataset(self):
+    def test_register_dataset(self):
         registry = DatasetRegistry()
-        ds = registry.get("nonexistent.dataset")
-        assert ds is None
+        ds = Dataset(id="test.ds", name="Test", patient_count=50)
+        registry.register(ds)
+        assert len(registry) == 1
+        assert registry.get("test.ds") is not None
+        assert registry.get("test.ds").patient_count == 50
 
-    def test_getitem_existing(self):
+    def test_unregister_dataset(self):
         registry = DatasetRegistry()
-        ds = registry["internal.chd"]
-        assert ds.patient_count == 489
+        ds = Dataset(id="test.ds", name="Test", patient_count=50)
+        registry.register(ds)
+        assert registry.unregister("test.ds") is True
+        assert len(registry) == 0
+        assert registry.unregister("nonexistent") is False
 
-    def test_getitem_raises_keyerror(self):
+    def test_contains(self):
+        registry = DatasetRegistry()
+        ds = Dataset(id="test.ds", name="Test", patient_count=50)
+        registry.register(ds)
+        assert "test.ds" in registry
+        assert "nonexistent" not in registry
+
+    def test_getitem(self):
+        registry = DatasetRegistry()
+        ds = Dataset(id="test.ds", name="Test", patient_count=50)
+        registry.register(ds)
+        assert registry["test.ds"].patient_count == 50
+
+    def test_getitem_keyerror(self):
         registry = DatasetRegistry()
         with pytest.raises(KeyError):
-            _ = registry["nonexistent.dataset"]
+            _ = registry["nonexistent"]
 
-    def test_exists(self):
-        registry = DatasetRegistry()
-        assert registry.exists("internal.chd") is True
-        assert registry.exists("nonexistent") is False
 
-    def test_list_datasets_all(self):
-        registry = DatasetRegistry()
-        all_ids = registry.list_datasets()
-        assert "internal.chd" in all_ids
-        assert "nlst.all" in all_ids
-        assert "coca.gated" in all_ids
+class TestYAMLLoading:
+    """Tests for YAML configuration loading"""
 
-    def test_list_datasets_by_category(self):
-        registry = DatasetRegistry()
+    def test_load_from_yaml(self, loaded_registry):
+        assert len(loaded_registry) == 4
+        assert loaded_registry.exists("internal.chd")
+        assert loaded_registry.exists("internal.normal")
+        assert loaded_registry.exists("external.nlst")
+        assert loaded_registry.exists("external.coca")
 
-        internal = registry.list_datasets("internal")
+    def test_patient_counts(self, loaded_registry):
+        assert loaded_registry.get_patient_count("internal.chd") == 100
+        assert loaded_registry.get_patient_count("internal.normal") == 50
+        assert loaded_registry.get_patient_count("external.nlst") == 200
+        assert loaded_registry.get_patient_count("external.coca") == 150
+
+    def test_categories(self, loaded_registry):
+        chd = loaded_registry.get("internal.chd")
+        assert chd.category == DatasetCategory.INTERNAL
+
+        nlst = loaded_registry.get("external.nlst")
+        assert nlst.category == DatasetCategory.EXTERNAL
+
+    def test_status(self, loaded_registry):
+        chd = loaded_registry.get("internal.chd")
+        assert chd.status == DatasetStatus.VALIDATED
+
+        nlst = loaded_registry.get("external.nlst")
+        assert nlst.status == DatasetStatus.COMPLETED
+
+    def test_slice_thickness(self, loaded_registry):
+        chd = loaded_registry.get("internal.chd")
+        assert chd.slice_thickness is not None
+        assert chd.slice_thickness.thin == "1.0mm"
+        assert chd.slice_thickness.thick == "5.0mm"
+        assert chd.is_paired is True
+
+    def test_metadata(self, loaded_registry):
+        chd = loaded_registry.get("internal.chd")
+        assert chd.metadata.get("source") == "Test"
+
+    def test_nonexistent_file(self):
+        registry = DatasetRegistry.from_yaml("/nonexistent/path.yaml")
+        assert len(registry) == 0
+
+    def test_list_datasets(self, loaded_registry):
+        all_ids = loaded_registry.list_datasets()
+        assert len(all_ids) == 4
+
+        internal = loaded_registry.list_datasets("internal")
+        assert len(internal) == 2
         assert "internal.chd" in internal
-        assert "internal.normal" in internal
-        assert "nlst.all" not in internal
 
-        nlst = registry.list_datasets("nlst")
-        assert "nlst.batch1" in nlst
-        assert "nlst.all" in nlst
-        assert "internal.chd" not in nlst
+        external = loaded_registry.list_datasets("external")
+        assert len(external) == 2
+        assert "external.nlst" in external
 
-    def test_get_patient_count(self):
-        registry = DatasetRegistry()
-        assert registry.get_patient_count("internal.chd") == 489
-        assert registry.get_patient_count("nonexistent") == 0
+    def test_get_total_patients(self, loaded_registry):
+        total = loaded_registry.get_total_patients(["internal.chd", "internal.normal"])
+        assert total == 150
 
-    def test_get_total_patients(self):
-        registry = DatasetRegistry()
-        total = registry.get_total_patients(["internal.chd", "internal.normal"])
-        assert total == 766  # Cases count (489 + 277), not unique patients
+    def test_get_by_category(self, loaded_registry):
+        internal = loaded_registry.get_by_category(DatasetCategory.INTERNAL)
+        assert len(internal) == 2
 
-    def test_get_by_category(self):
-        registry = DatasetRegistry()
-        internal = registry.get_by_category(DatasetCategory.INTERNAL)
-        assert len(internal) == 3  # chd, normal, all
-        for ds in internal:
-            assert ds.category == DatasetCategory.INTERNAL
+        external = loaded_registry.get_by_category(DatasetCategory.EXTERNAL)
+        assert len(external) == 2
 
-    def test_get_by_status(self):
-        registry = DatasetRegistry()
-        validated = registry.get_by_status(DatasetStatus.VALIDATED)
-        assert any(ds.id == "internal.chd" for ds in validated)
-        assert any(ds.id == "coca.gated" for ds in validated)
+    def test_get_by_status(self, loaded_registry):
+        validated = loaded_registry.get_by_status(DatasetStatus.VALIDATED)
+        assert len(validated) == 3  # chd, normal, coca
 
-    def test_summary(self):
-        registry = DatasetRegistry()
-        summary = registry.summary()
+        completed = loaded_registry.get_by_status(DatasetStatus.COMPLETED)
+        assert len(completed) == 1  # nlst
 
-        assert summary["internal"]["chd"] == 489
-        assert summary["internal"]["normal"] == 277
-        assert summary["internal"]["total"] == 765  # Unique patients
-
-        assert summary["external"]["nlst"] == 857
-        assert summary["external"]["coca"] == 657
-        assert summary["external"]["totalsegmentator"] == 1228
-
-        # 765 + 857 + 657 = 2279
-        assert summary["grand_total"]["validated"] == 2279
+    def test_summary(self, loaded_registry):
+        summary = loaded_registry.summary()
+        assert "internal" in summary
+        assert "external" in summary
+        assert "grand_total" in summary
 
 
-class TestSingletonRegistry:
-    """Tests for singleton registry pattern"""
+class TestGlobalRegistry:
+    """Tests for global registry functions"""
 
-    def test_get_dataset_registry_singleton(self):
-        reg1 = get_dataset_registry()
-        reg2 = get_dataset_registry()
-        assert reg1 is reg2
+    def test_get_dataset_registry_empty(self):
+        # Reset global registry
+        import cardiac_shared.data.datasets as ds_module
+        ds_module._registry_instance = None
 
-    def test_get_dataset_convenience(self):
+        registry = get_dataset_registry()
+        assert len(registry) == 0
+
+    def test_load_registry_from_yaml(self, temp_config_file):
+        # Reset global registry
+        import cardiac_shared.data.datasets as ds_module
+        ds_module._registry_instance = None
+
+        registry = load_registry_from_yaml(temp_config_file)
+        assert len(registry) == 4
+
+        # Verify global registry is updated
+        assert get_dataset_registry() is registry
+
+    def test_convenience_functions(self, temp_config_file):
+        # Reset and load
+        import cardiac_shared.data.datasets as ds_module
+        ds_module._registry_instance = None
+        load_registry_from_yaml(temp_config_file)
+
         ds = get_dataset("internal.chd")
         assert ds is not None
-        assert ds.patient_count == 489
+        assert ds.patient_count == 100
 
-    def test_get_patient_count_convenience(self):
-        count = get_patient_count("internal.all")
-        assert count == 765  # Unique patients
+        count = get_patient_count("internal.chd")
+        assert count == 100
 
-    def test_list_datasets_convenience(self):
-        internal = list_datasets("internal")
-        assert "internal.chd" in internal
+        datasets = list_datasets("internal")
+        assert "internal.chd" in datasets
 
 
-class TestDataIntegrity:
-    """Tests for data integrity across datasets"""
+class TestEmptyRegistry:
+    """Tests for empty registry behavior"""
 
-    def test_all_datasets_combined(self):
-        """ALL_DATASETS should contain all internal and external"""
-        assert len(ALL_DATASETS) == len(INTERNAL_DATASETS) + len(EXTERNAL_DATASETS)
+    def test_empty_print_summary(self, capsys):
+        registry = DatasetRegistry()
+        registry.print_summary()
+        captured = capsys.readouterr()
+        assert "No datasets loaded" in captured.out
 
-    def test_no_duplicate_ids(self):
-        """Dataset IDs should be unique"""
-        all_ids = list(ALL_DATASETS.keys())
-        assert len(all_ids) == len(set(all_ids))
-
-    def test_grand_total_calculation(self):
-        """Grand total should match expected values"""
+    def test_empty_summary(self):
         registry = DatasetRegistry()
         summary = registry.summary()
-
-        # Internal: 765 unique patients
-        assert summary["internal"]["total"] == 765
-
-        # External validated: 857 + 657 = 1514
-        external_validated = summary["external"]["nlst"] + summary["external"]["coca"]
-        assert external_validated == 1514
-
-        # Grand total validated: 765 + 857 + 657 = 2279
-        assert summary["grand_total"]["validated"] == 2279
-
-        # Including planned: 2279 + 1228 = 3507
-        assert summary["grand_total"]["including_planned"] == 3507
+        assert summary["grand_total"]["datasets"] == 0
+        assert summary["grand_total"]["validated"] == 0

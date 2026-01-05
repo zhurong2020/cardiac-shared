@@ -1,0 +1,98 @@
+# Dataset Registry Configuration Template
+# 数据集注册配置模板
+#
+# This file serves as a template for defining datasets.
+# Copy this file to your project and customize the values.
+#
+# Usage:
+#   from cardiac_shared.data import DatasetRegistry
+#   registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
+#
+# Version: 0.8.0
+# ============================================
+
+# Datasets Section
+# Each dataset has a unique ID (e.g., "internal.chd", "nlst.batch1")
+datasets:
+
+  # ===========================================
+  # Internal Datasets (Private/Institutional)
+  # ===========================================
+
+  # Example: CHD Patient Group
+  # internal.chd:
+  #   name: "CHD Group"
+  #   description: "Confirmed coronary artery disease patients"
+  #   patient_count: 489
+  #   category: internal
+  #   status: validated
+  #   slice_thickness:
+  #     thin: "1.0mm"
+  #     thick: "5.0mm"
+  #   group_tag: "chd"
+  #   notes: "Internal CHD dataset"
+  #   metadata:
+  #     source: "Institution Name"
+  #     paired_scans: true
+
+  # Example: Normal Control Group
+  # internal.normal:
+  #   name: "Normal Control Group"
+  #   description: "General population control group"
+  #   patient_count: 277
+  #   category: internal
+  #   status: validated
+  #   group_tag: "normal"
+
+  # ===========================================
+  # External Datasets (Public)
+  # ===========================================
+
+  # Example: NLST Dataset
+  # nlst.all:
+  #   name: "NLST All Batches"
+  #   description: "National Lung Screening Trial paired data"
+  #   patient_count: 857
+  #   category: external
+  #   status: completed
+  #   slice_thickness:
+  #     thin: "2.0mm"
+  #     thick: "5.0mm"
+  #   sub_batches:
+  #     - nlst.batch1
+  #     - nlst.batch2
+  #     - nlst.batch3
+  #     - nlst.batch4
+
+  # Example: Stanford COCA
+  # coca.gated:
+  #   name: "Stanford COCA - Gated CT"
+  #   description: "ECG-gated coronary CT with CAC annotations"
+  #   patient_count: 444
+  #   category: external
+  #   status: validated
+  #   metadata:
+  #     citation: "Zeleznik et al., Nature Communications 2021"
+
+# ===========================================
+# Field Reference
+# ===========================================
+#
+# Required fields:
+#   - name: Human-readable name
+#   - patient_count: Number of patients (integer)
+#
+# Optional fields:
+#   - description: Dataset description
+#   - category: internal | external | future (default: internal)
+#   - status: planned | in_progress | completed | validated | archived (default: completed)
+#   - slice_thickness:
+#       thin: Thin slice thickness (e.g., "1.0mm")
+#       thick: Thick slice thickness (e.g., "5.0mm")
+#   - group_tag: Short identifier for grouping
+#   - root_dir: Data directory path
+#   - results_dir: Results directory path
+#   - metadata_index: Path to metadata index file
+#   - notes: Additional notes (supports Chinese)
+#   - sub_batches: List of sub-dataset IDs
+#   - metadata: Additional key-value pairs

@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.7.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.8.0 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -158,25 +158,35 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 | `select_latest_batch()` | Select the latest batch matching criteria |
 | `get_patient_coverage()` | Check coverage of patients across batches |
 
-### Dataset Registry Module (v0.7.0)
+### Dataset Registry Module (v0.8.0 - Configuration-Driven)
 
 | Class/Function | Description |
 |----------------|-------------|
-| `DatasetRegistry` | Unified registry for dataset definitions |
+| `DatasetRegistry` | Registry framework for dataset definitions |
+| `DatasetRegistry.from_yaml(path)` | Load datasets from YAML configuration |
 | `Dataset` | Dataset definition with patient count and metadata |
 | `DatasetStatus` | Processing status (PLANNED, COMPLETED, VALIDATED) |
 | `DatasetCategory` | Category (INTERNAL, EXTERNAL, FUTURE) |
-| `get_dataset_registry()` | Get singleton registry instance |
-| `get_dataset(id)` | Get dataset by ID (e.g., 'internal.chd') |
-| `get_patient_count(id)` | Get patient count for a dataset |
-| `list_datasets(category)` | List datasets, optionally by category |
-| `print_dataset_summary()` | Print formatted dataset summary |
+| `load_registry_from_yaml(path)` | Load global registry from YAML |
+| `get_dataset_registry()` | Get global registry instance (empty by default) |
 
-**Authoritative Patient Counts**:
-- Internal: **765 unique patients** (766 cases: CHD 489 + Normal 277, 1 overlap)
-- NLST: Batch1-4 (108+92+402+255) = **857 patients**
-- COCA: Gated 444 + Nongated 213 = **657 patients**
-- TotalSegmentator: **1,228 patients** (planned)
+**Key Features**:
+- **Configuration-driven**: Dataset definitions loaded from YAML, not hardcoded
+- **Privacy-safe**: Internal/private data stays in local config files, not in PyPI
+- **Flexible updates**: Change data counts without releasing new package versions
+
+**Usage**:
+```python
+from cardiac_shared.data import DatasetRegistry, load_registry_from_yaml
+
+# Load from your project's config file
+registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
+
+# Or use the global registry
+load_registry_from_yaml("config/datasets_registry.yaml")
+chd = get_dataset("internal.chd")
+print(f"CHD patients: {chd.patient_count}")
+```
 
 ### Preprocessing Module (v0.6.0)
 

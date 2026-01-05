@@ -1,38 +1,47 @@
 """
-Dataset Registry - Unified dataset definitions for cardiac imaging research
-数据集注册表 - 心脏影像研究统一数据集定义
+Dataset Registry - Configuration-driven dataset definitions for cardiac imaging research
+数据集注册表 - 配置驱动的心脏影像研究数据集定义
 
-This module provides a central registry for all datasets used in cardiac imaging
-research, ensuring consistent patient counts and metadata across projects.
+This module provides a framework for managing dataset definitions. Dataset information
+is loaded from YAML configuration files, NOT hardcoded in the package.
 
-Data Source: ai-cac-research/config/data_sources_updated.yaml (authoritative)
+This approach:
+- Keeps internal/private data out of PyPI
+- Allows easy updates without package releases
+- Supports project-specific configurations
 
 Usage:
-    from cardiac_shared.data import DatasetRegistry, get_dataset_registry
+    from cardiac_shared.data import DatasetRegistry
 
-    # Get singleton registry
-    registry = get_dataset_registry()
+    # Load from YAML configuration
+    registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
+
+    # Or register datasets programmatically
+    registry = DatasetRegistry()
+    registry.register(Dataset(
+        id="internal.chd",
+        name="CHD Group",
+        patient_count=489,
+        ...
+    ))
 
     # Get dataset info
-    chd = registry.get('internal.chd')
-    print(f"CHD patients: {chd.patient_count}")  # 489
-
-    # Get all internal datasets
-    internal = registry.list_datasets('internal')
-
-    # Get total patient count
-    total = registry.get_total_patients(['internal.chd', 'internal.normal'])
-    print(f"Total: {total}")  # 766
+    chd = registry.get("internal.chd")
+    print(f"CHD patients: {chd.patient_count}")
 
 Author: Cardiac ML Research Team
 Created: 2026-01-04
-Version: 0.7.0
+Version: 0.8.0
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
 from enum import Enum
+import yaml
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DatasetStatus(Enum):
@@ -46,7 +55,7 @@ class DatasetStatus(Enum):
 
 class DatasetCategory(Enum):
     """Dataset category"""
-    INTERNAL = "internal"  # Dr. Chen's data
+    INTERNAL = "internal"  # Private/institutional data
     EXTERNAL = "external"  # Public datasets (NLST, COCA, etc.)
     FUTURE = "future"      # Planned datasets
 
@@ -61,6 +70,16 @@ class SliceThickness:
         if self.thin and self.thick:
             return f"{self.thin} + {self.thick}"
         return self.thin or self.thick or "unknown"
+
+    @classmethod
+    def from_dict(cls, data: Optional[Dict]) -> Optional["SliceThickness"]:
+        """Create from dictionary"""
+        if not data:
+            return None
+        return cls(
+            thin=data.get("thin"),
+            thick=data.get("thick")
+        )
 
 
 @dataclass
@@ -80,8 +99,8 @@ class Dataset:
     """
     id: str
     name: str
-    description: str
-    patient_count: int
+    description: str = ""
+    patient_count: int = 0
     category: DatasetCategory = DatasetCategory.INTERNAL
     status: DatasetStatus = DatasetStatus.COMPLETED
     slice_thickness: Optional[SliceThickness] = None
@@ -100,219 +119,127 @@ class Dataset:
                self.slice_thickness.thin is not None and \
                self.slice_thickness.thick is not None
 
+    @classmethod
+    def from_dict(cls, dataset_id: str, data: Dict[str, Any]) -> "Dataset":
+        """Create Dataset from dictionary (YAML parsing)"""
+        # Parse category
+        category_str = data.get("category", "internal").lower()
+        try:
+            category = DatasetCategory(category_str)
+        except ValueError:
+            category = DatasetCategory.INTERNAL
 
-# =============================================================================
-# Authoritative Dataset Definitions (from ai-cac-research)
-# =============================================================================
+        # Parse status
+        status_str = data.get("status", "completed").lower()
+        try:
+            status = DatasetStatus(status_str)
+        except ValueError:
+            status = DatasetStatus.COMPLETED
 
-INTERNAL_DATASETS = {
-    # CHD Group - Confirmed CAD patients
-    "internal.chd": Dataset(
-        id="internal.chd",
-        name="Internal CHD Group",
-        description="Confirmed coronary artery disease patients from Dr. Chen",
-        patient_count=489,
-        category=DatasetCategory.INTERNAL,
-        status=DatasetStatus.VALIDATED,
-        slice_thickness=SliceThickness(thin="1.0mm/1.5mm", thick="5.0mm"),
-        group_tag="chd",
-        notes="内部数据集 - 确认冠心病患者 (489例)",
-        metadata={
-            "source": "Dr. Chen",
-            "paired_scans": True,
-            "metadata_coverage": "99.5%",
-            "cac_positive_rate": "72.8%",
-        }
-    ),
+        # Parse slice thickness
+        slice_data = data.get("slice_thickness")
+        slice_thickness = SliceThickness.from_dict(slice_data) if slice_data else None
 
-    # Normal Group - General population (no confirmed CAD)
-    "internal.normal": Dataset(
-        id="internal.normal",
-        name="Internal Normal Group",
-        description="General population control group from Dr. Chen",
-        patient_count=277,
-        category=DatasetCategory.INTERNAL,
-        status=DatasetStatus.VALIDATED,
-        slice_thickness=SliceThickness(thin="1.0mm/1.5mm", thick="5.0mm"),
-        group_tag="normal",
-        notes="内部数据集 - 一般人/正常对照组 (277例)",
-        metadata={
-            "source": "Dr. Chen",
-            "paired_scans": True,
-            "metadata_coverage": "99.5%",
-            "cac_positive_rate": "9.7%",
-        }
-    ),
-
-    # Combined internal dataset
-    "internal.all": Dataset(
-        id="internal.all",
-        name="Internal Dataset (All)",
-        description="Complete internal dataset from Dr. Chen",
-        patient_count=765,  # Unique patients (766 cases, 1 patient has 2 scans)
-        category=DatasetCategory.INTERNAL,
-        status=DatasetStatus.VALIDATED,
-        slice_thickness=SliceThickness(thin="1.0mm/1.5mm", thick="5.0mm"),
-        group_tag="internal_all",
-        sub_batches=["internal.chd", "internal.normal"],
-        notes="内部数据集全集 - 765唯一患者 (766病例: CHD 489 + Normal 277, 1例重叠)",
-        metadata={
-            "source": "Dr. Chen",
-            "paired_scans": True,
-            "total_cases": 766,  # Total cases (1 patient appears twice)
-            "unique_patients": 765,
-            "metadata_coverage": "99.5%",
-        }
-    ),
-}
-
-EXTERNAL_DATASETS = {
-    # NLST Batches
-    "nlst.batch1": Dataset(
-        id="nlst.batch1",
-        name="NLST Batch 1",
-        description="NLST 2mm + 5mm paired data - First batch",
-        patient_count=108,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.COMPLETED,
-        slice_thickness=SliceThickness(thin="2.0mm", thick="5.0mm"),
-        group_tag="nlst_batch1",
-        notes="NLST Batch 1 - 108例, RESCUE率 11.1%",
-    ),
-
-    "nlst.batch2": Dataset(
-        id="nlst.batch2",
-        name="NLST Batch 2",
-        description="NLST additional paired data",
-        patient_count=92,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.COMPLETED,
-        slice_thickness=SliceThickness(thin="2.0mm", thick="5.0mm"),
-        group_tag="nlst_batch2",
-        notes="NLST Batch 2 - 92例",
-    ),
-
-    "nlst.batch3": Dataset(
-        id="nlst.batch3",
-        name="NLST Batch 3",
-        description="NLST large batch",
-        patient_count=402,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.COMPLETED,
-        slice_thickness=SliceThickness(thin="2.0mm", thick="5.0mm"),
-        group_tag="nlst_batch3",
-        notes="NLST Batch 3 - 402例",
-    ),
-
-    "nlst.batch4": Dataset(
-        id="nlst.batch4",
-        name="NLST Batch 4",
-        description="NLST final batch",
-        patient_count=255,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.COMPLETED,
-        slice_thickness=SliceThickness(thin="2.0mm", thick="5.0mm"),
-        group_tag="nlst_batch4",
-        notes="NLST Batch 4 - 255例",
-    ),
-
-    "nlst.all": Dataset(
-        id="nlst.all",
-        name="NLST All Batches",
-        description="Complete NLST dataset (all 4 batches)",
-        patient_count=857,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.COMPLETED,
-        slice_thickness=SliceThickness(thin="2.0mm", thick="5.0mm"),
-        group_tag="nlst_all",
-        sub_batches=["nlst.batch1", "nlst.batch2", "nlst.batch3", "nlst.batch4"],
-        notes="NLST全集 - 857例 (852例成功配对, 99.4%成功率), RESCUE率 10.2%",
-        metadata={
-            "successful_pairs": 852,
-            "rescue_cases": 87,
-            "rescue_rate": "10.2%",
-            "pearson_correlation": 0.9721,
-        }
-    ),
-
-    # Stanford COCA
-    "coca.gated": Dataset(
-        id="coca.gated",
-        name="Stanford COCA - Gated CT",
-        description="ECG-gated coronary CT with CAC annotations",
-        patient_count=444,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.VALIDATED,
-        slice_thickness=SliceThickness(thin="3.0mm", thick=None),
-        group_tag="coca_gated",
-        notes="Stanford COCA Gated - 444例, per-vessel ground truth",
-        metadata={
-            "ground_truth_format": "xml",
-            "citation": "Zeleznik et al., Nature Communications 2021",
-        }
-    ),
-
-    "coca.nongated": Dataset(
-        id="coca.nongated",
-        name="Stanford COCA - Nongated CT",
-        description="Non-gated chest CT with CAC annotations",
-        patient_count=213,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.VALIDATED,
-        slice_thickness=SliceThickness(thin="5.0mm/3.0mm", thick=None),
-        group_tag="coca_nongated",
-        notes="Stanford COCA Nongated - 213例, 唯一公开非门控CAC真值数据集",
-        metadata={
-            "ground_truth_format": "excel",
-        }
-    ),
-
-    "coca.all": Dataset(
-        id="coca.all",
-        name="Stanford COCA All",
-        description="Complete COCA dataset",
-        patient_count=657,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.VALIDATED,
-        group_tag="coca_all",
-        sub_batches=["coca.gated", "coca.nongated"],
-        notes="COCA全集 - Gated 444例 + Nongated 213例 = 657例",
-    ),
-
-    # TotalSegmentator
-    "totalsegmentator": Dataset(
-        id="totalsegmentator",
-        name="TotalSegmentator Dataset",
-        description="1.5mm CT scans with organ segmentations",
-        patient_count=1228,
-        category=DatasetCategory.EXTERNAL,
-        status=DatasetStatus.PLANNED,
-        slice_thickness=SliceThickness(thin="1.5mm", thick=None),
-        group_tag="totalseg",
-        notes="TotalSegmentator - 1228例, 117器官分割, P1优先级",
-        metadata={
-            "segmentation_organs": 117,
-            "aorta_coverage": "100%",
-            "heart_coverage": "100%",
-            "research_value": "Aortic calcification, anatomically-guided CAC",
-        }
-    ),
-}
-
-# Combined datasets dict
-ALL_DATASETS = {**INTERNAL_DATASETS, **EXTERNAL_DATASETS}
+        return cls(
+            id=dataset_id,
+            name=data.get("name", dataset_id),
+            description=data.get("description", ""),
+            patient_count=data.get("patient_count", 0),
+            category=category,
+            status=status,
+            slice_thickness=slice_thickness,
+            group_tag=data.get("group_tag"),
+            root_dir=data.get("root_dir"),
+            results_dir=data.get("results_dir"),
+            metadata_index=data.get("metadata_index"),
+            notes=data.get("notes"),
+            sub_batches=data.get("sub_batches"),
+            metadata=data.get("metadata", {}),
+        )
 
 
 class DatasetRegistry:
     """
     Central registry for dataset definitions
 
-    Provides unified access to all dataset definitions with patient counts
-    that are authoritative across all cardiac imaging projects.
+    Provides unified access to dataset definitions. Datasets are loaded
+    from YAML configuration files, keeping sensitive data out of the
+    public PyPI package.
+
+    Example:
+        # Load from YAML
+        registry = DatasetRegistry.from_yaml("config/datasets.yaml")
+
+        # Get dataset
+        chd = registry.get("internal.chd")
+
+        # Print summary
+        registry.print_summary()
     """
 
     def __init__(self):
-        self._datasets: Dict[str, Dataset] = ALL_DATASETS.copy()
+        self._datasets: Dict[str, Dataset] = {}
+        self._config_path: Optional[Path] = None
+
+    @classmethod
+    def from_yaml(cls, config_path: Union[str, Path]) -> "DatasetRegistry":
+        """
+        Load registry from YAML configuration file
+
+        Args:
+            config_path: Path to YAML configuration file
+
+        Returns:
+            DatasetRegistry with loaded datasets
+
+        Example YAML format:
+            datasets:
+              internal.chd:
+                name: "CHD Group"
+                patient_count: 489
+                category: internal
+                status: validated
+              nlst.all:
+                name: "NLST Dataset"
+                patient_count: 857
+                category: external
+        """
+        registry = cls()
+        registry._config_path = Path(config_path)
+
+        if not registry._config_path.exists():
+            logger.warning(f"Config file not found: {config_path}")
+            return registry
+
+        with open(registry._config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+
+        if not config:
+            logger.warning(f"Empty config file: {config_path}")
+            return registry
+
+        # Load datasets section
+        datasets_config = config.get("datasets", {})
+        for dataset_id, dataset_data in datasets_config.items():
+            try:
+                dataset = Dataset.from_dict(dataset_id, dataset_data)
+                registry._datasets[dataset_id] = dataset
+            except Exception as e:
+                logger.error(f"Error loading dataset {dataset_id}: {e}")
+
+        logger.info(f"Loaded {len(registry._datasets)} datasets from {config_path}")
+        return registry
+
+    def register(self, dataset: Dataset) -> None:
+        """Register a dataset programmatically"""
+        self._datasets[dataset.id] = dataset
+
+    def unregister(self, dataset_id: str) -> bool:
+        """Unregister a dataset"""
+        if dataset_id in self._datasets:
+            del self._datasets[dataset_id]
+            return True
+        return False
 
     def get(self, dataset_id: str) -> Optional[Dataset]:
         """Get dataset by ID"""
@@ -321,6 +248,14 @@ class DatasetRegistry:
     def __getitem__(self, dataset_id: str) -> Dataset:
         """Get dataset by ID (raises KeyError if not found)"""
         return self._datasets[dataset_id]
+
+    def __len__(self) -> int:
+        """Get number of registered datasets"""
+        return len(self._datasets)
+
+    def __contains__(self, dataset_id: str) -> bool:
+        """Check if dataset exists"""
+        return dataset_id in self._datasets
 
     def exists(self, dataset_id: str) -> bool:
         """Check if dataset exists"""
@@ -356,75 +291,130 @@ class DatasetRegistry:
 
     def summary(self) -> Dict[str, Any]:
         """Get summary statistics"""
-        internal = self.get_patient_count("internal.all")
-        nlst = self.get_patient_count("nlst.all")
-        coca = self.get_patient_count("coca.all")
+        internal_datasets = self.get_by_category(DatasetCategory.INTERNAL)
+        external_datasets = self.get_by_category(DatasetCategory.EXTERNAL)
+
+        internal_total = sum(d.patient_count for d in internal_datasets)
+        external_total = sum(d.patient_count for d in external_datasets)
+
+        # Try to get specific counts if datasets exist
+        internal_summary = {"total": internal_total}
+        for ds in internal_datasets:
+            # Use last part of ID as key (e.g., "internal.chd" -> "chd")
+            key = ds.id.split(".")[-1] if "." in ds.id else ds.id
+            if key != "all":  # Don't duplicate "all" count
+                internal_summary[key] = ds.patient_count
+
+        external_summary = {}
+        for ds in external_datasets:
+            key = ds.id.split(".")[0] if "." in ds.id else ds.id
+            if key not in external_summary:
+                # Find the ".all" dataset or sum up
+                all_ds = self.get(f"{key}.all")
+                if all_ds:
+                    external_summary[key] = all_ds.patient_count
+                else:
+                    external_summary[key] = ds.patient_count
+
+        validated_total = sum(
+            d.patient_count for d in self._datasets.values()
+            if d.status in (DatasetStatus.VALIDATED, DatasetStatus.COMPLETED)
+            and not d.sub_batches  # Don't double count
+        )
 
         return {
-            "internal": {
-                "total": internal,
-                "chd": self.get_patient_count("internal.chd"),
-                "normal": self.get_patient_count("internal.normal"),
-            },
-            "external": {
-                "nlst": nlst,
-                "coca": coca,
-                "totalsegmentator": self.get_patient_count("totalsegmentator"),
-            },
+            "internal": internal_summary,
+            "external": external_summary,
             "grand_total": {
-                "validated": internal + nlst + coca,  # 765 + 857 + 657 = 2279
-                "including_planned": internal + nlst + coca + self.get_patient_count("totalsegmentator"),
+                "datasets": len(self._datasets),
+                "validated": validated_total,
             }
         }
 
     def print_summary(self) -> None:
         """Print formatted summary"""
-        s = self.summary()
         print("=" * 60)
         print("CARDIAC IMAGING DATASET REGISTRY")
         print("=" * 60)
-        print("\nInternal Datasets (Dr. Chen):")
-        print(f"  CHD Group:    {s['internal']['chd']:>5} patients")
-        print(f"  Normal Group: {s['internal']['normal']:>5} patients")
-        print(f"  Total:        {s['internal']['total']:>5} unique patients")
-        print("\nExternal Datasets:")
-        print(f"  NLST:              {s['external']['nlst']:>5} patients (4 batches)")
-        print(f"  COCA:              {s['external']['coca']:>5} patients (Gated + Nongated)")
-        print(f"  TotalSegmentator:  {s['external']['totalsegmentator']:>5} patients (planned)")
-        print("\nGrand Total:")
-        print(f"  Validated:   {s['grand_total']['validated']:>5} patients")
-        print(f"  With Planned: {s['grand_total']['including_planned']:>5} patients")
+
+        if not self._datasets:
+            print("\n[No datasets loaded]")
+            print("Use DatasetRegistry.from_yaml('config/datasets.yaml') to load")
+            print("=" * 60)
+            return
+
+        if self._config_path:
+            print(f"Config: {self._config_path}")
+
+        internal = self.get_by_category(DatasetCategory.INTERNAL)
+        external = self.get_by_category(DatasetCategory.EXTERNAL)
+
+        if internal:
+            print("\nInternal Datasets:")
+            for ds in internal:
+                if not ds.sub_batches:  # Skip aggregate datasets
+                    print(f"  {ds.name}: {ds.patient_count:>5} patients")
+
+        if external:
+            print("\nExternal Datasets:")
+            for ds in external:
+                if not ds.sub_batches:
+                    status = f" ({ds.status.value})" if ds.status != DatasetStatus.COMPLETED else ""
+                    print(f"  {ds.name}: {ds.patient_count:>5} patients{status}")
+
+        s = self.summary()
+        print(f"\nTotal: {s['grand_total']['datasets']} datasets, "
+              f"{s['grand_total']['validated']} patients (validated)")
         print("=" * 60)
 
 
-# Singleton instance
+# Singleton instance (empty by default)
 _registry_instance: Optional[DatasetRegistry] = None
 
 
 def get_dataset_registry() -> DatasetRegistry:
-    """Get or create singleton registry instance"""
+    """
+    Get the global registry instance
+
+    Note: The registry is empty by default. Use load_registry_from_yaml()
+    or registry.from_yaml() to load dataset definitions.
+    """
     global _registry_instance
     if _registry_instance is None:
         _registry_instance = DatasetRegistry()
     return _registry_instance
 
 
-# Convenience functions
+def load_registry_from_yaml(config_path: Union[str, Path]) -> DatasetRegistry:
+    """
+    Load the global registry from a YAML configuration file
+
+    Args:
+        config_path: Path to YAML configuration file
+
+    Returns:
+        The global DatasetRegistry instance with loaded datasets
+    """
+    global _registry_instance
+    _registry_instance = DatasetRegistry.from_yaml(config_path)
+    return _registry_instance
+
+
 def get_dataset(dataset_id: str) -> Optional[Dataset]:
-    """Get dataset by ID"""
+    """Get dataset by ID from global registry"""
     return get_dataset_registry().get(dataset_id)
 
 
 def get_patient_count(dataset_id: str) -> int:
-    """Get patient count for a dataset"""
+    """Get patient count for a dataset from global registry"""
     return get_dataset_registry().get_patient_count(dataset_id)
 
 
 def list_datasets(category: Optional[str] = None) -> List[str]:
-    """List all dataset IDs"""
+    """List all dataset IDs from global registry"""
     return get_dataset_registry().list_datasets(category)
 
 
 def print_dataset_summary() -> None:
-    """Print dataset summary"""
+    """Print dataset summary from global registry"""
     get_dataset_registry().print_summary()

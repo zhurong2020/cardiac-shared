@@ -5,38 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.1] - 2026-01-04
+## [0.8.0] - 2026-01-04
 
-### Fixed
-- Internal dataset patient count corrected to 765 unique patients (was 766)
-  - 766 cases total (CHD 489 + Normal 277)
-  - 1 patient appears in both groups (duplicate scan)
-  - `internal.all.patient_count` now returns 765 (unique patients)
-  - Added `metadata.total_cases = 766` for case-level count
+### Changed (BREAKING)
+- **Dataset Registry refactored to configuration-driven approach**
+  - Removed hardcoded dataset definitions from PyPI package
+  - Dataset information now loaded from YAML configuration files
+  - Internal/private data stays in local config, not exposed to PyPI
+
+### Added
+- `DatasetRegistry.from_yaml(path)` - Load datasets from YAML configuration
+- `load_registry_from_yaml(path)` - Load global registry from YAML
+- `Dataset.from_dict()` - Create dataset from dictionary
+- `SliceThickness.from_dict()` - Create slice thickness from dictionary
+- `registry.register(dataset)` - Programmatically register datasets
+- `registry.unregister(dataset_id)` - Remove datasets from registry
+- `examples/datasets_registry_template.yaml` - Template for configuration
+
+### Removed
+- `INTERNAL_DATASETS`, `EXTERNAL_DATASETS`, `ALL_DATASETS` constants
+- Hardcoded patient counts (now in local YAML configs)
+
+### Why This Change?
+1. **Privacy**: Internal data counts should not be public on PyPI
+2. **Flexibility**: Data changes don't require new package releases
+3. **Project-specific**: Each project can have its own dataset config
+
+### Migration Guide
+```python
+# Before (v0.7.x) - hardcoded data
+from cardiac_shared.data import get_dataset_registry
+registry = get_dataset_registry()  # Had hardcoded data
+
+# After (v0.8.0) - configuration-driven
+from cardiac_shared.data import DatasetRegistry
+registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
+```
 
 ---
 
-## [0.7.0] - 2026-01-04
+## [0.7.1] - 2026-01-04 (Superseded by 0.8.0)
+
+### Fixed
+- Internal dataset patient count corrected to 765 unique patients
+
+---
+
+## [0.7.0] - 2026-01-04 (Superseded by 0.8.0)
 
 ### Added
-- Dataset Registry module (`cardiac_shared.data.datasets`)
-  - `DatasetRegistry` - Unified registry for dataset definitions
-  - `Dataset` - Dataclass with patient count, status, metadata
-  - `DatasetStatus` - Status enum (PLANNED, IN_PROGRESS, COMPLETED, VALIDATED, ARCHIVED)
-  - `DatasetCategory` - Category enum (INTERNAL, EXTERNAL, FUTURE)
-  - `SliceThickness` - Slice thickness configuration for paired scans
-  - `get_dataset_registry()` - Singleton access function
-  - `get_dataset()`, `get_patient_count()`, `list_datasets()` - Convenience functions
-  - `print_dataset_summary()` - Formatted summary output
-  - Authoritative patient counts from ai-cac-research:
-    - Internal: 765 unique patients (766 cases: CHD 489 + Normal 277)
-    - NLST: 857 patients (4 batches: 108+92+402+255)
-    - COCA: 657 patients (Gated 444 + Nongated 213)
-    - TotalSegmentator: 1,228 patients (planned)
-
-### Changed
-- Version bumped to 0.7.0
-- Added 38 new unit tests for DatasetRegistry
+- Dataset Registry module (initial implementation with hardcoded data)
 
 ---
 

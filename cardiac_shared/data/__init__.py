@@ -38,13 +38,11 @@ from .datasets import (
     SliceThickness,
     DatasetRegistry,
     get_dataset_registry,
+    load_registry_from_yaml,
     get_dataset,
     get_patient_count,
     list_datasets,
     print_dataset_summary,
-    INTERNAL_DATASETS,
-    EXTERNAL_DATASETS,
-    ALL_DATASETS,
 )
 
 __all__ = [
@@ -64,18 +62,16 @@ __all__ = [
     'BatchInfo',
     'PatientBatchRecord',
     'discover_batches',
-    # Dataset Registry (v0.7.0)
+    # Dataset Registry (v0.8.0 - configuration-driven)
     'Dataset',
     'DatasetStatus',
     'DatasetCategory',
     'SliceThickness',
     'DatasetRegistry',
     'get_dataset_registry',
+    'load_registry_from_yaml',
     'get_dataset',
     'get_patient_count',
     'list_datasets',
     'print_dataset_summary',
-    'INTERNAL_DATASETS',
-    'EXTERNAL_DATASETS',
-    'ALL_DATASETS',
 ]
