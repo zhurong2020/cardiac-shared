@@ -63,7 +63,7 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
 ## [0.7.1] - 2026-01-04 (YANKED)
 
 ### Fixed
-- Internal dataset patient count corrected to 765 unique patients
+- Internal dataset patient count corrected to 732 unique patients (735 cases)
 
 ---
 
