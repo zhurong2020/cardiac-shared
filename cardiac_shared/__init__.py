@@ -16,14 +16,14 @@ Modules:
 - cache: Result caching with resume capability
 - batch: Batch processing framework
 - config: YAML configuration management
-- data: Intermediate results registry and batch management for cross-project sharing
+- data: Intermediate results registry, batch management, paired dataset (v0.9.0)
 - data_sources: Multi-source data management (ZAL, CHD, Normal, Custom)
 - vertebra: Vertebra detection and ROI calculation
 - tissue: Tissue classification and HU filtering (SAT, VAT, IMAT)
-- preprocessing: Unified DICOM conversion and TotalSegmentator pipelines (v0.6.0)
+- preprocessing: DICOM conversion, TotalSegmentator pipelines, thickness detection (v0.9.0)
 """
 
-__version__ = "0.6.2"
+__version__ = "0.9.0"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata
@@ -94,6 +94,10 @@ from cardiac_shared.data import (
     ConsumerRecord,
     create_nifti_batch,
     load_batch,
+    # Paired dataset (v0.9.0)
+    PairedSample,
+    PairedDatasetConfig,
+    PairedDatasetLoader,
 )
 
 # Data sources management (v0.5.0)
@@ -125,7 +129,7 @@ from cardiac_shared.tissue import (
     get_tissue_hu_range,
 )
 
-# Preprocessing pipelines (v0.6.0)
+# Preprocessing pipelines (v0.6.0) and thickness detection (v0.9.0)
 from cardiac_shared.preprocessing import (
     DicomConverter,
     ConversionResult,
@@ -134,6 +138,12 @@ from cardiac_shared.preprocessing import (
     PreprocessingConfig,
     PreprocessingResult,
     create_pipeline,
+    # Thickness detection (v0.9.0)
+    ThicknessSource,
+    ThicknessCategory,
+    ThicknessInfo,
+    ThicknessDetector,
+    detect_thickness,
 )
 
 __all__ = [
@@ -207,6 +217,10 @@ __all__ = [
     'ConsumerRecord',
     'create_nifti_batch',
     'load_batch',
+    # Paired dataset (v0.9.0)
+    'PairedSample',
+    'PairedDatasetConfig',
+    'PairedDatasetLoader',
 
     # Data sources (v0.5.0)
     'DataSourceManager',
@@ -239,4 +253,10 @@ __all__ = [
     'PreprocessingConfig',
     'PreprocessingResult',
     'create_pipeline',
+    # Thickness detection (v0.9.0)
+    'ThicknessSource',
+    'ThicknessCategory',
+    'ThicknessInfo',
+    'ThicknessDetector',
+    'detect_thickness',
 ]

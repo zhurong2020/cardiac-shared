@@ -6,7 +6,8 @@ Provides:
 - BatchManager: Batch processing with manifest tracking
 - BatchManifest: Manifest data structure for batch outputs
 - BatchDiscovery: Dynamic batch discovery and selection (v0.6.4)
-- DatasetRegistry: Unified dataset definitions with patient counts (v0.7.0)
+- DatasetRegistry: Unified dataset definitions with patient counts (v0.8.0)
+- PairedDatasetLoader: Paired thin/thick slice dataset management (v0.9.0)
 """
 
 from .registry import (
@@ -45,6 +46,12 @@ from .datasets import (
     print_dataset_summary,
 )
 
+from .paired_dataset import (
+    PairedSample,
+    PairedDatasetConfig,
+    PairedDatasetLoader,
+)
+
 __all__ = [
     # Registry
     'IntermediateResultsRegistry',
@@ -74,4 +81,8 @@ __all__ = [
     'get_patient_count',
     'list_datasets',
     'print_dataset_summary',
+    # Paired Dataset (v0.9.0)
+    'PairedSample',
+    'PairedDatasetConfig',
+    'PairedDatasetLoader',
 ]
