@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2026-01-21
+
+### Added
+- **`preprocessing/thickness.py`** - CT slice thickness detection module
+  - `ThicknessDetector`: Auto-detect thickness from DICOM metadata, NIfTI header, or z-spacing
+  - `ThicknessInfo`: Container with category properties (thin/medium/thick)
+  - `ThicknessCategory`: Enum for thickness classification
+  - `detect_thickness()`: Convenience function for quick detection
+
+- **`data/paired_dataset.py`** - Paired thin/thick slice dataset management
+  - `PairedSample`: Container for paired thin/thick slice data
+  - `PairedDatasetConfig`: Configuration for dataset loading
+  - `PairedDatasetLoader`: Load and manage NLST, Internal datasets
+
+### Changed
+- Updated module docstrings to reflect v0.9.0 capabilities
+- Package description updated to include new modules
+
+### Purpose
+These modules were migrated from `ai-cac-research/src/preprocessing/adaptive/` to enable cross-project reuse for:
+- NLST 2mm/5mm slice thickness reprocessing
+- Multi-thickness validation research
+- RESCUE phenomenon analysis
+
+---
+
 ## [0.8.1] - 2026-01-04
 
 ### Changed
