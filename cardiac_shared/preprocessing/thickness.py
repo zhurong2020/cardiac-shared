@@ -4,15 +4,12 @@ Slice Thickness Detection Module.
 Automatically detects CT slice thickness from DICOM metadata, NIfTI headers,
 or computes it from slice positions when metadata is unavailable.
 
-Migrated from ai-cac-research/src/preprocessing/adaptive/thickness_detector.py
-for cross-project reuse.
-
 Example:
     >>> from cardiac_shared.preprocessing import ThicknessDetector, ThicknessInfo
     >>> detector = ThicknessDetector()
     >>> info = detector.detect_from_dicom(dicom_series)
     >>> print(f"Detected: {info.thickness}mm ({info.category})")
-    
+
     >>> # Or use convenience function
     >>> from cardiac_shared.preprocessing import detect_thickness
     >>> info = detect_thickness(dicom_datasets=dicom_series)

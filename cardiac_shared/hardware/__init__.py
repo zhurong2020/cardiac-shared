@@ -1,8 +1,6 @@
 """
 Shared Hardware Detection Module
 Hardware detection for Windows/Linux/Colab/WSL
-
-Migrated from cardiac-ml-research/shared/hardware/
 """
 
 from cardiac_shared.hardware.detector import (

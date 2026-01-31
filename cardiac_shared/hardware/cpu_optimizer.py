@@ -10,8 +10,6 @@ Key Features:
 - DataLoader optimization (num_workers, batch_size, prefetch)
 - Inference optimization (thread control, memory management)
 - Hospital CPU presets (typical 8-core, 16GB configurations)
-
-Migrated from cardiac-ml-research/shared/hardware/cpu_optimizer.py
 """
 
 import os

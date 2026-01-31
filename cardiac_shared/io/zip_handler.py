@@ -3,7 +3,6 @@
 Provides context managers and utilities for extracting ZIP files
 containing DICOM or other medical imaging data.
 
-Extracted from cardiac-ai-cac/cac_scorer/cli/run_scoring.py
 """
 
 import tempfile

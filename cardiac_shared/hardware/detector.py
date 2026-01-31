@@ -3,8 +3,6 @@ Hardware Detection Module - Shared Version
 
 Supports multiple environments: Windows/Linux/Colab/WSL
 Auto-detects GPU, CPU, memory and provides performance recommendations.
-
-Migrated from cardiac-ml-research/shared/hardware/detector.py
 """
 
 import psutil

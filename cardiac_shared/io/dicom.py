@@ -1,7 +1,4 @@
-"""DICOM file handling utilities.
-
-Extracted from ai-cac-research/src/utils/dicom_utils.py
-"""
+"""DICOM file handling utilities."""
 
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union

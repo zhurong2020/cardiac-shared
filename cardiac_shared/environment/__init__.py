@@ -1,8 +1,6 @@
 """
 Shared Environment Detection Module
 Runtime environment detection for Colab/Windows/Linux/WSL
-
-Migrated from cardiac-ml-research/shared/environment/
 """
 
 from cardiac_shared.environment.runtime_detector import (

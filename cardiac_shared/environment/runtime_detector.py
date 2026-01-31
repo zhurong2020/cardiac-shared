@@ -3,8 +3,6 @@ Runtime Environment Detector
 
 Auto-detect runtime environment: Colab/Windows/Linux/WSL/macOS
 Supports Google Drive mounting (Colab environment)
-
-Migrated from cardiac-ml-research/shared/environment/runtime_detector.py
 """
 
 import os
