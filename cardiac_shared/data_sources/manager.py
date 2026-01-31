@@ -172,21 +172,18 @@ class DataSourceManager:
         Raises:
             FileNotFoundError: If project config not found
         """
-        # Common project paths
-        project_paths = {
-            'vbca': [
-                Path.home() / 'projects' / 'vbca' / 'config' / 'data_sources.yaml',
-                Path('/home/wuxia/projects/vbca/config/data_sources.yaml'),
-            ],
-            'pcfa': [
-                Path.home() / 'projects' / 'pcfa' / 'config' / 'data_sources.yaml',
-                Path('/home/wuxia/projects/pcfa/config/data_sources.yaml'),
-            ],
-            'ai-cac': [
-                Path.home() / 'projects' / 'ai-cac-research' / 'config' / 'data_sources.yaml',
-                Path('/home/wuxia/projects/ai-cac-research/config/data_sources.yaml'),
-            ],
+        # Look for project config in ~/projects/<name>/config/data_sources.yaml
+        project_dir_names = {
+            'vbca': 'vbca',
+            'pcfa': 'pcfa',
+            'ai-cac': 'ai-cac-research',
         }
+
+        project_paths = {}
+        for proj, dirname in project_dir_names.items():
+            project_paths[proj] = [
+                Path.home() / 'projects' / dirname / 'config' / 'data_sources.yaml',
+            ]
 
         if project_name not in project_paths:
             raise ValueError(f"Unknown project: {project_name}. "

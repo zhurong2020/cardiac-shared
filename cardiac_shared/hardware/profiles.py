@@ -6,8 +6,8 @@ This module contains empirical performance profiles for various GPU models and C
 All timing data is based on real-world measurements from TotalSegmentator processing.
 
 Data Sources:
-- RTX 2060 (6GB): T12 batch validation (2025-11-20, 21 cases)
-- CPU-only: ZAL v3.2 test (2025-11-26)
+- RTX 2060 (6GB): Measured from CT batch processing (21 cases)
+- CPU-only: Measured from CT batch processing
 - Other GPUs: Estimated based on VRAM scaling and compute capability
 
 Usage:
@@ -73,7 +73,7 @@ GPU_PROFILES: Dict[str, GPUProfile] = {
         totalseg_fast_mode=True,  # 6GB VRAM requires fast mode
         totalseg_timeout_sec=1800,  # 30 minutes
         totalseg_parallel_cases=1,  # Single case only (VRAM limited)
-        totalseg_measured_time_per_case=96.0,  # 1.6 min/case (T12 batch empirical, 2025-11-20)
+        totalseg_measured_time_per_case=96.0,  # 1.6 min/case (measured)
         min_vram_gb=5.5,
         recommended_ram_gb=16.0,
     ),
@@ -139,7 +139,7 @@ GPU_PROFILES: Dict[str, GPUProfile] = {
         totalseg_fast_mode=True,  # Fast mode still helps on CPU
         totalseg_timeout_sec=5400,  # 90 minutes (3× GPU time)
         totalseg_parallel_cases=1,  # Single case (CPU bottleneck)
-        totalseg_measured_time_per_case=288.0,  # 4.8 min/case (3× RTX 2060, empirical ZAL v3.2)
+        totalseg_measured_time_per_case=288.0,  # 4.8 min/case (~3x RTX 2060, measured)
         min_vram_gb=0.0,
         recommended_ram_gb=16.0,
     ),
