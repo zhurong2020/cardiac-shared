@@ -87,9 +87,9 @@ class IntermediateResultsRegistry:
     Example:
         >>> registry = IntermediateResultsRegistry()
         >>> registry.list_available('segmentation')
-        ['totalsegmentator_organs.chd_v2', 'totalsegmentator_organs.normal_v2']
-        >>> registry.get_path('segmentation.totalsegmentator_organs.chd_v2')
-        PosixPath('/mnt/c/.../intermediate_results/totalsegmentator/organs_chd_v2')
+        ['totalsegmentator_organs.cohort_v2', 'totalsegmentator_organs.control_v2']
+        >>> registry.get_path('segmentation.totalsegmentator_organs.cohort_v2')
+        PosixPath('/data/intermediate_results/totalsegmentator/organs_cohort_v2')
     """
 
     # Default config locations (searched in order)

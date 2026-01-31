@@ -17,17 +17,17 @@ Usage:
 
     # Convert single patient
     nifti_path, created = converter.convert_patient(
-        patient_id="10022887",
-        dicom_path=Path("/dicom/10022887"),
+        patient_id="P001234",
+        dicom_path=Path("/dicom/P001234"),
         output_dir=Path("/nifti")
     )
 
     # Convert batch with manifest
     manifest = converter.convert_batch(
-        patient_ids=["10022887", "10022888"],
+        patient_ids=["P001234", "P001235"],
         dicom_root=Path("/dicom"),
         output_dir=Path("/nifti"),
-        dataset_id="internal_chd_v1"
+        dataset_id="study_cohort_v1"
     )
 
 Author: Cardiac ML Research Team
@@ -99,16 +99,16 @@ class DicomConverter:
         >>> converter = DicomConverter()
         >>>
         >>> # Single patient
-        >>> result = converter.convert_patient("10022887", dicom_path, output_dir)
+        >>> result = converter.convert_patient("P001234", dicom_path, output_dir)
         >>> if result.success:
         ...     print(f"Saved to: {result.output_path}")
         >>>
         >>> # Batch with manifest
         >>> manifest = converter.convert_batch(
-        ...     patient_ids=["10022887", "10022888"],
+        ...     patient_ids=["P001234", "P001235"],
         ...     dicom_root=Path("/dicom"),
         ...     output_dir=Path("/nifti"),
-        ...     dataset_id="internal_chd_v1"
+        ...     dataset_id="study_cohort_v1"
         ... )
     """
 
@@ -392,7 +392,7 @@ class DicomConverter:
             patient_ids: List of patient identifiers
             dicom_root: Root directory containing patient DICOM folders
             output_dir: Output directory for NIfTI files
-            dataset_id: Batch identifier (e.g., "internal_chd_v1")
+            dataset_id: Batch identifier (e.g., "study_cohort_v1")
             provider: Data provider name
             batch: Batch name
             dicom_pattern: Pattern to find DICOM folder (default: "{patient_id}")

@@ -103,12 +103,12 @@ class SharedPreprocessingPipeline:
         ... )
         >>>
         >>> # For PCFA
-        >>> nifti = pipeline.ensure_nifti("10022887", "internal_chd_v1", dicom_path)
-        >>> pipeline.ensure_totalsegmentator("10022887", "internal_chd_v1")
-        >>> heart = pipeline.get_mask("10022887", "internal_chd_v1", "heart")
+        >>> nifti = pipeline.ensure_nifti("P001234", "study_cohort_v1", dicom_path)
+        >>> pipeline.ensure_totalsegmentator("P001234", "study_cohort_v1")
+        >>> heart = pipeline.get_mask("P001234", "study_cohort_v1", "heart")
         >>>
         >>> # For VBCA
-        >>> vertebrae = pipeline.get_masks("10022887", "internal_chd_v1",
+        >>> vertebrae = pipeline.get_masks("P001234", "study_cohort_v1",
         ...                                 ["vertebrae_T12", "vertebrae_L1", "vertebrae_L2"])
     """
 
@@ -313,7 +313,7 @@ class SharedPreprocessingPipeline:
 
         Args:
             patient_id: Patient identifier
-            dataset_id: Dataset identifier (e.g., "internal_chd_v1")
+            dataset_id: Dataset identifier (e.g., "study_cohort_v1")
             dicom_path: Path to DICOM (required if not existing)
 
         Returns:
@@ -431,7 +431,7 @@ class SharedPreprocessingPipeline:
             Path to segmentation directory if found, None otherwise
 
         Example:
-            >>> seg_path = pipeline.find_existing_segmentation("10022887", "chd")
+            >>> seg_path = pipeline.find_existing_segmentation("P001234", "chd")
             >>> if seg_path:
             ...     heart_mask = seg_path / "heart.nii.gz"
         """

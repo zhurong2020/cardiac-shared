@@ -16,19 +16,19 @@ Usage:
 
     # List all available batches
     batches = discovery.list_batches()
-    # Output: ['organs_chd_v1', 'organs_chd_v2', 'organs_normal_v1']
+    # Output: ['organs_cohort_v1', 'organs_cohort_v2', 'organs_normal_v1']
 
     # Get batch info
-    info = discovery.get_batch_info('organs_chd_v2')
+    info = discovery.get_batch_info('organs_cohort_v2')
     print(f"Created: {info['created_at']}, Patients: {info['total']}")
 
     # Find patient across all batches
-    results = discovery.find_patient('10022887')
-    # Output: [{'batch': 'organs_chd_v2', 'status': 'success', 'path': ...}]
+    results = discovery.find_patient('P001234')
+    # Output: [{'batch': 'organs_cohort_v2', 'status': 'success', 'path': ...}]
 
     # Select a specific batch for processing
-    batch = discovery.select_batch('organs_chd_v2')
-    heart_mask = batch.get_mask('10022887', 'heart')
+    batch = discovery.select_batch('organs_cohort_v2')
+    heart_mask = batch.get_mask('P001234', 'heart')
 
 Author: Cardiac ML Research Team
 Created: 2026-01-04
@@ -112,10 +112,10 @@ class BatchDiscovery:
         ...     print(f"{batch}: {info['total_patients']} patients")
         >>>
         >>> # Select latest batch for CHD
-        >>> batch = discovery.select_latest_batch(prefix="organs_chd")
+        >>> batch = discovery.select_latest_batch(prefix="organs_cohort")
         >>>
         >>> # Find patient in any batch
-        >>> results = discovery.find_patient("10022887")
+        >>> results = discovery.find_patient("P001234")
         >>> if results:
         ...     latest = results[-1]  # Most recent
         ...     heart_mask = latest.patient_path / "heart.nii.gz"
@@ -272,7 +272,7 @@ class BatchDiscovery:
         List all discovered batch IDs
 
         Args:
-            prefix: Optional prefix filter (e.g., "organs_chd")
+            prefix: Optional prefix filter (e.g., "organs_cohort")
             sort_by: Sort key ("created_at", "batch_id", "total_patients")
 
         Returns:

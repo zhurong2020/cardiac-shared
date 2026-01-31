@@ -15,10 +15,10 @@ Usage:
     manager = BatchManager(output_dir=Path("/path/to/nifti"))
 
     # Create or load manifest
-    manifest = manager.create_batch("internal_chd_v1", source_path="/dicom/chd")
+    manifest = manager.create_batch("study_cohort_v1", source_path="/dicom/chd")
 
     # Check for existing NIfTI
-    existing = manager.find_existing_nifti("10022887", "internal_chd_v1")
+    existing = manager.find_existing_nifti("P001234", "study_cohort_v1")
     if existing:
         print(f"Reusing existing: {existing}")
 
@@ -26,7 +26,7 @@ Usage:
     manager.register_patient(batch_id, patient_id, output_file, metadata)
 
     # Register consumer
-    manager.register_consumer(batch_id, "pcfa", "pcfa_run_20260103")
+    manager.register_consumer(batch_id, "pcfa", "analysis_run_001")
 
 Author: Cardiac ML Research Team
 Created: 2026-01-03
@@ -212,14 +212,14 @@ class BatchManager:
 
     Example:
         >>> manager = BatchManager(output_dir=Path("/nifti"))
-        >>> manifest = manager.create_batch("internal_chd_v1")
+        >>> manifest = manager.create_batch("study_cohort_v1")
         >>>
         >>> # Check before processing
-        >>> existing = manager.find_existing_nifti("10022887", "internal_chd_v1")
+        >>> existing = manager.find_existing_nifti("P001234", "study_cohort_v1")
         >>> if not existing:
         ...     # Process patient
-        ...     manager.register_patient("internal_chd_v1", "10022887",
-        ...                              output_file="10022887.nii.gz",
+        ...     manager.register_patient("study_cohort_v1", "P001234",
+        ...                              output_file="P001234.nii.gz",
         ...                              dimensions=[512, 512, 512])
     """
 
@@ -268,12 +268,12 @@ class BatchManager:
         Create a new batch manifest
 
         Args:
-            dataset_id: Unique batch identifier (e.g., "internal_chd_v1")
+            dataset_id: Unique batch identifier (e.g., "study_cohort_v1")
             source_path: Path to source data
             output_path: Output directory for this batch
             tool: Processing tool name
             tool_version: Tool version
-            provider: Data provider (e.g., "Dr. Chen")
+            provider: Data provider (e.g., "Hospital A")
             batch: Batch name (e.g., "batch1")
             dataset_type: Type of data (e.g., "nifti_converted", "totalsegmentator_masks")
 
@@ -579,7 +579,7 @@ def create_nifti_batch(
     Convenience function to create a NIfTI conversion batch
 
     Args:
-        dataset_id: Batch identifier (e.g., "internal_chd_v1")
+        dataset_id: Batch identifier (e.g., "study_cohort_v1")
         source_path: Path to source DICOM directory
         output_path: Output directory for NIfTI files
         provider: Data provider name

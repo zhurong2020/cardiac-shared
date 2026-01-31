@@ -4,13 +4,10 @@ Paired Dataset Module for Multi-Thickness CT Analysis.
 Provides data loading utilities for paired thin/thick-slice CT volumes,
 supporting multi-thickness validation research and RESCUE phenomenon analysis.
 
-Migrated from ai-cac-research/src/preprocessing/adaptive/paired_dataset.py
-for cross-project reuse.
-
 Example:
     >>> from cardiac_shared.data import PairedDatasetLoader, PairedSample
     >>> loader = PairedDatasetLoader()
-    >>> loader.add_nlst_dataset('/mnt/e/nlst', thin_mm=2.0, thick_mm=5.0)
+    >>> loader.add_nlst_dataset('/data/nlst', thin_mm=2.0, thick_mm=5.0)
     >>> samples = loader.load_samples()
     >>> print(f"Loaded {len(samples)} paired samples")
 """
@@ -32,7 +29,7 @@ class PairedSample:
     
     Attributes:
         patient_id: Unique patient identifier
-        dataset: Dataset name (e.g., "NLST", "Internal_CHD")
+        dataset: Dataset name (e.g., "NLST", "Internal")
         thin_path: Path to thin-slice data (DICOM dir or NIfTI file)
         thick_path: Path to thick-slice data
         thin_thickness: Thin slice thickness in mm
@@ -169,7 +166,7 @@ class PairedDatasetLoader:
     Example:
         >>> loader = PairedDatasetLoader()
         >>> loader.add_nlst_dataset(
-        ...     data_root='/mnt/e/nlst',
+        ...     data_root='/data/nlst',
         ...     series_inventory='/path/to/inventory.csv',
         ...     thin_mm=2.0,
         ...     thick_mm=5.0
