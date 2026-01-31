@@ -10,10 +10,10 @@ Usage:
     manager = DataSourceManager('/path/to/config.yaml')
 
     # Or use project auto-discovery
-    manager = DataSourceManager.from_project('vbca')
+    manager = DataSourceManager.from_project('my-project')
 
     # Get a specific data source
-    source = manager.get_source('zal')
+    source = manager.get_source('default')
     for file in source.get_files():
         print(f"Processing: {file}")
 

@@ -1,5 +1,4 @@
 # cardiac-shared Development Roadmap
-# cardiac-shared 开发路线图
 
 **Created**: 2026-01-03
 **Current Version**: 0.5.1
@@ -315,10 +314,10 @@ After v1.0.0 release:
 
 | Version | Type | Scope | Priority |
 |---------|------|-------|----------|
-| **v0.5.1** | PATCH | GPU优化 + 异步预加载 | HIGH |
-| **v0.6.0** | MINOR | DICOM去重 + NIfTI验证 + 外部数据集 | MEDIUM |
-| **v0.7.0** | MINOR | 路径管理 + 环境检查 | LOW |
-| **v1.0.0** | MAJOR | API冻结 + 完整文档 | LOW |
+| **v0.5.1** | PATCH | GPU optimization + async preloading | HIGH |
+| **v0.6.0** | MINOR | DICOM dedup + NIfTI validation + external datasets | MEDIUM |
+| **v0.7.0** | MINOR | Path management + environment checks | LOW |
+| **v1.0.0** | MAJOR | API freeze + full documentation | LOW |
 
 ---
 

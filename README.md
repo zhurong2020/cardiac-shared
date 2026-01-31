@@ -6,7 +6,7 @@
 
 Shared utilities for cardiac imaging analysis projects.
 
-**Version**: 0.8.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
+**Version**: 0.9.1 | **PyPI**: https://pypi.org/project/cardiac-shared/
 
 ## Installation
 
@@ -107,7 +107,7 @@ pip install cardiac-shared[gpu]      # GPU/PyTorch support
 
 | Class/Function | Description |
 |----------------|-------------|
-| `DataSourceManager` | Multi-source data management (ZAL/CHD/Normal/Custom) |
+| `DataSourceManager` | Multi-source data management with YAML config |
 | `DataSource` | Configuration for a single data source |
 | `DataSourceStatus` | Status check result for a data source |
 | `get_source()` | Get data source from default manager |
@@ -299,19 +299,19 @@ from cardiac_shared.data import get_registry
 registry = get_registry()
 
 # Check if TotalSegmentator results are available
-if registry.exists('segmentation.totalsegmentator_organs.chd_v2'):
-    organs_path = registry.get_path('segmentation.totalsegmentator_organs.chd_v2')
+if registry.exists('segmentation.totalsegmentator_organs.cohort_v2'):
+    organs_path = registry.get_path('segmentation.totalsegmentator_organs.cohort_v2')
     heart_mask = organs_path / patient_id / 'heart.nii.gz'
 
 # Get metadata
-meta = registry.get_metadata('body_composition.vbca_stage1_labels.zal_v3.2')
+meta = registry.get_metadata('body_composition.stage1_labels.cohort_v1')
 print(f"Patient count: {meta.get('patient_count')}")
 
 # List available results
 available = registry.list_available('segmentation')
 
 # Get usage suggestion for a project
-suggestion = registry.suggest_input('pcfa', 'heart_masks', 'chd')
+suggestion = registry.suggest_input('pericardial_fat', 'heart_masks', 'cohort')
 ```
 
 ### Data Source Management (v0.5.0)
@@ -323,10 +323,10 @@ from cardiac_shared.data_sources import DataSourceManager
 manager = DataSourceManager('/path/to/data_sources.yaml')
 
 # Or use project auto-discovery
-manager = DataSourceManager.from_project('vbca')
+manager = DataSourceManager.from_project('my-project')
 
 # Get data source
-source = manager.get_source('zal')
+source = manager.get_source('default')
 print(f"Input: {source.input_dir}")
 print(f"Files: {source.file_count()}")
 
@@ -395,25 +395,25 @@ manager = BatchManager(output_dir="/data/nifti")
 
 # Create batch for NIfTI conversion
 manifest = manager.create_batch(
-    dataset_id="internal_chd_v1",
-    source_path="/data/dicom/chd",
-    provider="Dr. Chen",
+    dataset_id="study_cohort_v1",
+    source_path="/data/dicom/cohort",
+    provider="Hospital A",
 )
 
 # Check for existing conversion (deduplication)
-existing = manager.find_existing_nifti("10022887", "internal_chd_v1")
+existing = manager.find_existing_nifti("P001234", "study_cohort_v1")
 if not existing:
     # Process and register
     manager.register_patient(
-        dataset_id="internal_chd_v1",
-        patient_id="10022887",
+        dataset_id="study_cohort_v1",
+        patient_id="P001234",
         status="success",
-        output_file="10022887.nii.gz",
+        output_file="P001234.nii.gz",
         dimensions=[512, 512, 256]
     )
 
 # Track consumer modules
-manager.register_consumer("internal_chd_v1", "pcfa", "pcfa_run_20260103")
+manager.register_consumer("study_cohort_v1", "pericardial_fat", "analysis_run_001")
 ```
 
 ### Batch Discovery (v0.6.4)
@@ -425,23 +425,23 @@ from cardiac_shared.data import BatchDiscovery
 discovery = BatchDiscovery("/data/totalsegmentator")
 
 # List all available batches
-for batch_id in discovery.list_batches(prefix="organs_chd"):
+for batch_id in discovery.list_batches(prefix="organs_cohort"):
     info = discovery.get_batch_info(batch_id)
     print(f"{batch_id}: {info['total_patients']} patients, created {info['created_at']}")
 
-# Select the latest batch for CHD
-batch = discovery.select_latest_batch(prefix="organs_chd", require_success_count=100)
+# Select the latest batch
+batch = discovery.select_latest_batch(prefix="organs_cohort", require_success_count=100)
 print(f"Selected: {batch.batch_id}")
 
 # Find a patient across all batches
-records = discovery.find_patient("10022887")
+records = discovery.find_patient("P001234")
 if records:
     latest = records[0]  # Most recent
     heart_mask = latest.patient_path / "heart.nii.gz"
     print(f"Found in {latest.batch_id}: {heart_mask}")
 
 # Check coverage for a patient list
-coverage = discovery.get_patient_coverage(patient_ids, batch_prefix="organs_chd")
+coverage = discovery.get_patient_coverage(patient_ids, batch_prefix="organs_cohort")
 print(f"Coverage: {coverage['coverage_rate']:.1f}% ({coverage['covered']}/{coverage['total']})")
 ```
 
@@ -458,106 +458,51 @@ pipeline = create_pipeline(
 )
 
 # Ensure NIfTI exists (converts if needed)
-result = pipeline.ensure_nifti("10022887", "internal_chd_v1", dicom_path)
+result = pipeline.ensure_nifti("P001234", "study_cohort_v1", dicom_path)
 print(f"NIfTI: {result.output_path}")
 
 # Ensure TotalSegmentator results exist
-result = pipeline.ensure_totalsegmentator("10022887", "internal_chd_v1")
+result = pipeline.ensure_totalsegmentator("P001234", "study_cohort_v1")
 print(f"Segmentation: {result.output_path}")
 
-# Get masks for specific module (PCFA needs heart)
-masks = pipeline.get_module_masks("10022887", "internal_chd_v1", "pcfa")
+# Get masks for specific analysis module
+masks = pipeline.get_module_masks("P001234", "study_cohort_v1", "pericardial_fat")
 heart_mask = masks["heart"]
 
-# Validate masks for a module
-valid, missing = pipeline.validate_for_module("10022887", "internal_chd_v1", "pvat")
+# Validate masks for an analysis module
+valid, missing = pipeline.validate_for_module("P001234", "study_cohort_v1", "perivascular_fat")
 if not valid:
     print(f"Missing masks: {missing}")
 ```
 
-## Projects Using This Package
+## Use Cases
 
-- [vbca](https://github.com/zhurong2020/vbca) - Vertebral Body Composition Analysis
-- cardiac-ml-research - Main research project
-- pcfa - Pericardial Fat Analysis
-- ai-cac-research - CAC scoring research
+This package supports various cardiac imaging analysis workflows:
+- Vertebral body composition analysis
+- Pericardial fat analysis
+- Coronary artery calcium scoring
+- Multi-organ CT segmentation pipelines
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
-### v0.6.4 (2026-01-04)
-- **NEW**: `BatchDiscovery` module for dynamic batch discovery and selection
-- `BatchDiscovery`: Scan directories and discover all batches with manifest.json
-- `list_batches()`: List all discovered batch IDs with filtering
-- `find_patient()`: Find a patient across all batches
-- `select_latest_batch()`: Select the latest batch matching criteria
-- `get_patient_coverage()`: Check how many patients are covered by existing batches
-- `add_batch_directory()`: Manually add batch even without manifest
-- **Use case**: When running PCFA after VBCA, select specific batch version to use
+### v0.9.1 (2026-01-31)
+- Remove all Chinese characters from source code and documentation
+- Remove hardcoded internal project names from public API
+- Generalize `DataSourceManager.from_project()` to accept arbitrary project names
+- Rename `MODULE_REQUIREMENTS` keys to descriptive analysis type names
+- Clean all code examples to use generic placeholders
+- Update README version and documentation
 
-### v0.6.3 (2026-01-04)
-- **NEW**: Registry-based auto-discovery in SharedPreprocessingPipeline
-- `find_existing_segmentation()`: Search registry/fallback for existing TotalSeg outputs
-- `get_reuse_summary()`: Analyze reuse potential for batch processing
-- `ensure_totalsegmentator()`: Now auto-checks registry before running TotalSegmentator
-- New config options: `use_registry`, `registry_config_path`, `fallback_segmentation_paths`
-- **Impact**: PCFA can now automatically reuse VBCA's TotalSegmentator outputs
-- **Time savings**: ~80s per patient when reusing existing segmentation
+### v0.9.0 (2026-01-21)
+- Added `preprocessing/thickness.py` (CT slice thickness detection)
+- Added `data/paired_dataset.py` (paired thin/thick dataset management)
 
-### v0.6.2 (2026-01-04)
-- Added `totalsegmentator_roi_subset` parameter to PreprocessingConfig
-- Enables TotalSegmentator `--roi_subset` for single-organ segmentation
-- **Performance**: 1.5-2x speedup for single-organ tasks (68s -> 43s on RTX 2060)
-- PCFA results consistent (<0.5% difference vs full segmentation)
-- 40-case validation test: 97.5% success rate
+### v0.8.1 (2026-01-04)
+- Stable configuration-driven DatasetRegistry
 
-### v0.6.1 (2026-01-03)
-- Fix: Auto-detect TotalSegmentator executable path
-- SharedPreprocessingPipeline now finds TotalSegmentator in Python env or PATH
-- Added `totalsegmentator_path` config option for custom paths
-
-### v0.6.0 (2026-01-03)
-- Added `data/batch_manager.py` (BatchManager, BatchManifest for batch tracking)
-- Added `preprocessing/dicom_converter.py` (DicomConverter for unified DICOM->NIfTI)
-- Added `preprocessing/pipeline.py` (SharedPreprocessingPipeline for multi-module preprocessing)
-- Manifest-based batch tracking with consumer lineage
-- Automatic deduplication for NIfTI conversion
-- Module-specific mask requirements (PCFA, PVAT, VBCA, Chamber)
-- 40 new unit tests (100% pass)
-
-### v0.5.1 (2026-01-03)
-- Added `hardware/gpu_utils.py` (GPU stabilization time optimization)
-- Added `io/preloader.py` (AsyncNiftiPreloader for background preloading)
-- ~5-10% speedup for TotalSegmentator pipelines
-- 38 new unit tests
-
-### v0.5.0 (2026-01-03)
-- Added `data_sources` module (DataSourceManager for ZAL/CHD/Normal/Custom)
-- Added `vertebra` module (VertebraDetector, ROI calculation)
-- Added `tissue` module (TissueClassifier, Alberta Protocol 2024 HU ranges)
-- 44 new unit tests (100% pass)
-
-### v0.4.0 (2026-01-02)
-- Added `data` module (IntermediateResultsRegistry)
-- Cross-project intermediate results discovery and sharing
-- Automatic Windows/WSL path conversion
-- Usage pattern suggestions per project
-
-### v0.3.0 (2026-01-02)
-- Added `parallel` module (ParallelProcessor, checkpoint/resume)
-- Added `progress` module (ProgressTracker, multi-level)
-- Added `cache` module (CacheManager)
-- Added `batch` module (BatchProcessor)
-- Added `config` module (ConfigManager)
-- Published to PyPI
-
-### v0.2.0 (2026-01-02)
-- Added `hardware` module (detector, cpu_optimizer)
-- Added `environment` module (runtime_detector)
-
-### v0.1.0 (2025-12-01)
-- Initial release with IO modules
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ## License
 

@@ -26,7 +26,7 @@ Usage:
     manager.register_patient(batch_id, patient_id, output_file, metadata)
 
     # Register consumer
-    manager.register_consumer(batch_id, "pcfa", "analysis_run_001")
+    manager.register_consumer(batch_id, "analysis_module", "run_001")
 
 Author: Cardiac ML Research Team
 Created: 2026-01-03
@@ -471,7 +471,7 @@ class BatchManager:
 
         Args:
             dataset_id: Batch identifier
-            module: Consumer module name (e.g., "pcfa", "vbca")
+            module: Consumer module name (e.g., "pericardial_fat", "vertebra_composition")
             batch_id: Consumer's batch run ID
         """
         manifest = self._manifests.get(dataset_id)

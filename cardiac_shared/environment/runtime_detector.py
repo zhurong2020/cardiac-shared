@@ -319,15 +319,15 @@ def get_data_directory_recommendations(env: RuntimeEnvironment) -> Dict[str, Pat
 
     if env.is_colab:
         if env.google_drive_mounted:
-            base = env.google_drive_path / 'MyDrive' / 'cardiac-ml-research'
-            recommendations['data_dir'] = base / 'data' / 'dicom_original'
+            base = env.google_drive_path / 'MyDrive'
+            recommendations['data_dir'] = base / 'data'
             recommendations['output_dir'] = base / 'output'
-            recommendations['cache_dir'] = base / 'data' / 'cache'
+            recommendations['cache_dir'] = base / 'cache'
         else:
-            base = Path('/content/cardiac-ml-research')
-            recommendations['data_dir'] = base / 'data' / 'dicom_original'
+            base = Path('/content')
+            recommendations['data_dir'] = base / 'data'
             recommendations['output_dir'] = base / 'output'
-            recommendations['cache_dir'] = base / 'data' / 'cache'
+            recommendations['cache_dir'] = base / 'cache'
             recommendations['warning'] = "Colab temporary storage, recommend mounting Google Drive"
 
     elif env.runtime_type in ['windows', 'wsl']:

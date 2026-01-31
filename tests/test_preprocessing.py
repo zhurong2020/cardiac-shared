@@ -220,12 +220,12 @@ class TestSharedPreprocessingPipeline:
 
     def test_module_requirements(self):
         """Test module mask requirements"""
-        assert "pcfa" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS
-        assert "heart" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS["pcfa"]
-        assert "pvat" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS
-        assert "aorta" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS["pvat"]
-        assert "vbca" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS
-        assert "vertebrae_T12" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS["vbca"]
+        assert "pericardial_fat" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS
+        assert "heart" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS["pericardial_fat"]
+        assert "perivascular_fat" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS
+        assert "aorta" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS["perivascular_fat"]
+        assert "vertebra_composition" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS
+        assert "vertebrae_T12" in SharedPreprocessingPipeline.MODULE_REQUIREMENTS["vertebra_composition"]
 
     def test_get_nifti_path(self):
         """Test getting NIfTI path"""
@@ -321,7 +321,7 @@ class TestSharedPreprocessingPipeline:
                 segmentation_root=Path(tmpdir) / "seg",
             )
 
-            masks = pipeline.get_module_masks("p001", "test_dataset", "pcfa")
+            masks = pipeline.get_module_masks("p001", "test_dataset", "pericardial_fat")
             assert "heart" in masks
 
     def test_validate_for_module(self):
@@ -337,12 +337,12 @@ class TestSharedPreprocessingPipeline:
             seg_dir.mkdir(parents=True)
             (seg_dir / "heart.nii.gz").touch()
 
-            # PCFA should pass (only needs heart)
-            valid, missing = pipeline.validate_for_module("p001", "test_dataset", "pcfa")
+            # Pericardial fat should pass (only needs heart)
+            valid, missing = pipeline.validate_for_module("p001", "test_dataset", "pericardial_fat")
             assert valid is True
 
-            # PVAT should fail (needs aorta)
-            valid, missing = pipeline.validate_for_module("p001", "test_dataset", "pvat")
+            # Perivascular fat should fail (needs aorta)
+            valid, missing = pipeline.validate_for_module("p001", "test_dataset", "perivascular_fat")
             assert valid is False
             assert "aorta" in missing
 

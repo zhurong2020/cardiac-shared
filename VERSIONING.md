@@ -1,4 +1,4 @@
-# Versioning Policy / 版本管理策略
+# Versioning Policy
 
 This project follows [Semantic Versioning 2.0.0](https://semver.org/).
 
@@ -53,3 +53,5 @@ The following versions have been yanked (not recommended for use):
 | 0.7.1 | 2026-01-04 | PATCH | Patient count fix (yanked) |
 | 0.8.0 | 2026-01-04 | MAJOR | Config-driven refactor (yanked - rushed) |
 | 0.8.1 | 2026-01-04 | PATCH | Stable config-driven release |
+| 0.9.0 | 2026-01-21 | MINOR | Thickness detection and paired datasets |
+| 0.9.1 | 2026-01-31 | PATCH | Public package cleanup (IP preparation) |

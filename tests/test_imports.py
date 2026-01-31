@@ -6,7 +6,7 @@ import pytest
 def test_import_cardiac_shared():
     """Test main package import."""
     import cardiac_shared
-    assert cardiac_shared.__version__ == "0.2.0"
+    assert cardiac_shared.__version__ == "0.9.1"
 
 
 def test_import_io_module():

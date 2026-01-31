@@ -53,11 +53,11 @@ class TestConsumerRecord:
     def test_default_values(self):
         """Test default values"""
         consumer = ConsumerRecord(
-            module="pcfa",
-            batch_id="pcfa_run_001",
+            module="pericardial_fat",
+            batch_id="analysis_run_001",
             first_used="2026-01-03T10:00:00",
         )
-        assert consumer.module == "pcfa"
+        assert consumer.module == "pericardial_fat"
         assert consumer.run_count == 1
         assert consumer.last_used is None
 
@@ -126,7 +126,7 @@ class TestBatchManifest:
             },
             "consumers": [
                 {
-                    "module": "pcfa",
+                    "module": "pericardial_fat",
                     "batch_id": "pcfa_001",
                     "first_used": "2026-01-03T11:00:00",
                     "run_count": 1,
@@ -270,14 +270,14 @@ class TestBatchManager:
             manager = BatchManager(output_dir=tmpdir)
             manager.create_batch("test_batch")
 
-            manager.register_consumer("test_batch", "pcfa", "pcfa_run_001")
+            manager.register_consumer("test_batch", "pericardial_fat", "analysis_run_001")
 
             manifest = manager.get_manifest("test_batch")
             assert len(manifest.consumers) == 1
-            assert manifest.consumers[0].module == "pcfa"
+            assert manifest.consumers[0].module == "pericardial_fat"
 
             # Register same consumer again - should increment count
-            manager.register_consumer("test_batch", "pcfa", "pcfa_run_002")
+            manager.register_consumer("test_batch", "pericardial_fat", "analysis_run_002")
             assert manifest.consumers[0].run_count == 2
 
     def test_list_batches(self):

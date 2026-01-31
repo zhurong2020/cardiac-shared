@@ -3,7 +3,7 @@
 Data Sources Manager for Cardiac Imaging Analysis
 
 Provides a unified interface for managing multiple data sources
-(ZAL, CHD, Normal, Custom) across projects (vbca, pcfa, ai-cac).
+across cardiac imaging analysis projects.
 
 Usage:
     from cardiac_shared.data_sources import DataSourceManager
@@ -11,11 +11,11 @@ Usage:
     # Initialize with config file
     manager = DataSourceManager('/path/to/config.yaml')
 
-    # Or use auto-discovery
-    manager = DataSourceManager.from_project('vbca')
+    # Or use project auto-discovery
+    manager = DataSourceManager.from_project('my-project')
 
     # Get a specific data source
-    source = manager.get_source('zal')
+    source = manager.get_source('default')
     print(f"Input: {source.input_dir}")
 
     # List all available data sources
@@ -159,12 +159,16 @@ class DataSourceManager:
             self._parse_sources()
 
     @classmethod
-    def from_project(cls, project_name: str) -> 'DataSourceManager':
+    def from_project(cls, project_name: str, search_dirs: Optional[list] = None) -> 'DataSourceManager':
         """
-        Create manager from a known project configuration.
+        Create manager by discovering a project's data_sources.yaml config.
+
+        Searches for config/data_sources.yaml under common project locations.
 
         Args:
-            project_name: Project name ('vbca', 'pcfa', 'ai-cac')
+            project_name: Project directory name (e.g., 'my-project')
+            search_dirs: Optional list of parent directories to search.
+                         Defaults to ~/projects/
 
         Returns:
             DataSourceManager instance
@@ -172,30 +176,19 @@ class DataSourceManager:
         Raises:
             FileNotFoundError: If project config not found
         """
-        # Look for project config in ~/projects/<name>/config/data_sources.yaml
-        project_dir_names = {
-            'vbca': 'vbca',
-            'pcfa': 'pcfa',
-            'ai-cac': 'ai-cac-research',
-        }
+        if search_dirs is None:
+            search_dirs = [Path.home() / 'projects']
 
-        project_paths = {}
-        for proj, dirname in project_dir_names.items():
-            project_paths[proj] = [
-                Path.home() / 'projects' / dirname / 'config' / 'data_sources.yaml',
-            ]
-
-        if project_name not in project_paths:
-            raise ValueError(f"Unknown project: {project_name}. "
-                           f"Available: {list(project_paths.keys())}")
-
-        for path in project_paths[project_name]:
-            if path.exists():
-                return cls(config_path=path)
+        search_paths = []
+        for parent in search_dirs:
+            candidate = parent / project_name / 'config' / 'data_sources.yaml'
+            search_paths.append(candidate)
+            if candidate.exists():
+                return cls(config_path=candidate)
 
         raise FileNotFoundError(
             f"Config not found for project '{project_name}'. "
-            f"Searched: {[str(p) for p in project_paths[project_name]]}"
+            f"Searched: {[str(p) for p in search_paths]}"
         )
 
     def _load_config(self, config_path: Path) -> None:
@@ -264,7 +257,7 @@ class DataSourceManager:
     @property
     def default_source(self) -> str:
         """Get default data source name."""
-        return self._config.get('default_source', 'zal')
+        return self._config.get('default_source', 'default')
 
     def get_source(self, name: Optional[str] = None) -> DataSource:
         """

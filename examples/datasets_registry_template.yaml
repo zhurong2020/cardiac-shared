@@ -1,5 +1,4 @@
 # Dataset Registry Configuration Template
-# 数据集注册配置模板
 #
 # This file serves as a template for defining datasets.
 # Copy this file to your project and customize the values.
@@ -93,6 +92,6 @@ datasets:
 #   - root_dir: Data directory path
 #   - results_dir: Results directory path
 #   - metadata_index: Path to metadata index file
-#   - notes: Additional notes (supports Chinese)
+#   - notes: Additional notes
 #   - sub_batches: List of sub-dataset IDs
 #   - metadata: Additional key-value pairs

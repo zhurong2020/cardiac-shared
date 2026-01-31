@@ -1,6 +1,5 @@
 """
 Unified Hardware Optimizer
-统一硬件优化器
 
 Provides hardware-aware optimization recommendations for medical imaging tasks.
 Backward compatible with shared/hardware_manager/optimizer.py API.

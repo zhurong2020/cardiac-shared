@@ -4,7 +4,7 @@ Cross-project data discovery and sharing for cardiac imaging projects
 
 This module provides a central registry for discovering and accessing
 intermediate processing results (TotalSegmentator masks, Stage 1 labels, etc.)
-that can be shared across projects (vbca, pcfa, ai-cac).
+that can be shared across analysis modules.
 
 Usage:
     from cardiac_shared.data import IntermediateResultsRegistry
@@ -17,16 +17,16 @@ Usage:
     registry = get_registry()
 
     # Discover available results
-    if registry.exists('segmentation.totalsegmentator_organs.chd_v2'):
-        path = registry.get_path('segmentation.totalsegmentator_organs.chd_v2')
+    if registry.exists('segmentation.totalsegmentator_organs.cohort_v2'):
+        path = registry.get_path('segmentation.totalsegmentator_organs.cohort_v2')
         heart_mask = path / patient_id / 'heart.nii.gz'
 
     # List available results
     available = registry.list_available('segmentation')
-    print(available)  # ['totalsegmentator_organs.chd_v2', 'totalsegmentator_organs.normal_v2', ...]
+    print(available)  # ['totalsegmentator_organs.cohort_v2', ...]
 
     # Get metadata
-    meta = registry.get_metadata('body_composition.vbca_stage1_labels.zal_v3.2')
+    meta = registry.get_metadata('body_composition.stage1_labels.cohort_v1')
     print(f"Patient count: {meta.get('patient_count')}")
 
 Author: Cardiac ML Research Team
@@ -87,9 +87,9 @@ class IntermediateResultsRegistry:
     Example:
         >>> registry = IntermediateResultsRegistry()
         >>> registry.list_available('segmentation')
-        ['totalsegmentator_organs.cohort_v2', 'totalsegmentator_organs.control_v2']
+        ['totalsegmentator_organs.cohort_v2', ...]
         >>> registry.get_path('segmentation.totalsegmentator_organs.cohort_v2')
-        PosixPath('/data/intermediate_results/totalsegmentator/organs_cohort_v2')
+        PosixPath('/data/totalsegmentator/organs_cohort_v2')
     """
 
     # Default config locations (searched in order)
@@ -97,7 +97,7 @@ class IntermediateResultsRegistry:
         # Project-specific config
         "config/intermediate_results_registry.yaml",
         # Parent project config (for subprojects)
-        "../cardiac-ml-research/config/intermediate_results_registry.yaml",
+        "../config/intermediate_results_registry.yaml",
         # Home directory
         "~/.cardiac/intermediate_results_registry.yaml",
     ]
@@ -390,7 +390,7 @@ class IntermediateResultsRegistry:
         Get usage pattern for a project
 
         Args:
-            project: Project name ('vbca', 'pcfa', 'ai_cac')
+            project: Project or analysis module name
 
         Returns:
             Dictionary of input types to registry keys
@@ -398,14 +398,14 @@ class IntermediateResultsRegistry:
         patterns = self._config.get('usage_patterns', {})
         return patterns.get(project, {})
 
-    def suggest_input(self, project: str, input_type: str, cohort: str = 'chd') -> Optional[str]:
+    def suggest_input(self, project: str, input_type: str, cohort: str = 'default') -> Optional[str]:
         """
         Suggest best input for a project
 
         Args:
-            project: Project name ('vbca', 'pcfa', 'ai_cac')
+            project: Project or analysis module name
             input_type: Input type (e.g., 'stage1_input', 'heart_masks')
-            cohort: Cohort name for variable substitution (default: 'chd')
+            cohort: Cohort name for variable substitution
 
         Returns:
             Registry key for suggested input, or None

@@ -1,6 +1,5 @@
 """
 GPU/CPU Performance Profiles - Empirical Data Repository
-GPU/CPU性能档案库 - 基于实测数据
 
 This module contains empirical performance profiles for various GPU models and CPU-only mode.
 All timing data is based on real-world measurements from TotalSegmentator processing.

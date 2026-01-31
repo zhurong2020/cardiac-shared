@@ -1,6 +1,5 @@
 """
 Dataset Registry - Configuration-driven dataset definitions for cardiac imaging research
-数据集注册表 - 配置驱动的心脏影像研究数据集定义
 
 This module provides a framework for managing dataset definitions. Dataset information
 is loaded from YAML configuration files, NOT hardcoded in the package.

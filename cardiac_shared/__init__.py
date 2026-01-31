@@ -17,13 +17,13 @@ Modules:
 - batch: Batch processing framework
 - config: YAML configuration management
 - data: Intermediate results registry, batch management, paired dataset (v0.9.0)
-- data_sources: Multi-source data management (ZAL, CHD, Normal, Custom)
+- data_sources: Multi-source data management
 - vertebra: Vertebra detection and ROI calculation
 - tissue: Tissue classification and HU filtering (SAT, VAT, IMAT)
 - preprocessing: DICOM conversion, TotalSegmentator pipelines, thickness detection (v0.9.0)
 """
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 # IO modules
 from cardiac_shared.io.dicom import read_dicom_series, get_dicom_metadata

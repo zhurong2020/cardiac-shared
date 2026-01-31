@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.1] - 2026-01-31
+
+### Changed
+- **Public package cleanup for software copyright and patent filing**
+  - Removed all Chinese characters from source code docstrings and documentation
+  - Removed hardcoded internal project names (`vbca`, `pcfa`, `ai-cac`) from source code
+  - Generalized `DataSourceManager.from_project()` to accept arbitrary project names with configurable search paths
+  - Renamed `MODULE_REQUIREMENTS` keys from project abbreviations to descriptive analysis type names
+    (`pcfa` -> `pericardial_fat`, `pvat` -> `perivascular_fat`, `vbca` -> `vertebra_composition`, etc.)
+  - Replaced all internal patient IDs, provider names, and cohort identifiers in code examples with generic placeholders
+  - Generalized Colab data directory recommendations (removed project-specific paths)
+  - Cleaned `IntermediateResultsRegistry` default config paths (removed parent project reference)
+  - Updated `DataSourceManager` default source from `'zal'` to `'default'`
+
+### Fixed
+- README version number updated from 0.8.1 to 0.9.1
+
+### Documentation
+- README examples fully anonymized with generic identifiers
+- "Projects Using" section replaced with generic "Use Cases" section
+- VERSIONING.md title translated to English
+- ROADMAP Chinese text translated to English
+- Dataset registry YAML template cleaned of Chinese comments
+
+### Migration Notes
+- `MODULE_REQUIREMENTS` keys renamed (breaking if used directly):
+  - `"pcfa"` -> `"pericardial_fat"`
+  - `"pvat"` -> `"perivascular_fat"`
+  - `"vbca"` -> `"vertebra_composition"`
+  - `"chamber"` -> `"chamber_analysis"`
+  - `"kidney_vol"` -> `"kidney_volume"`
+- `DataSourceManager.from_project()` signature changed: now accepts `search_dirs` parameter instead of hardcoded project map
+- `DataSourceManager.default_source` default changed from `'zal'` to `'default'`
+
+---
+
 ## [0.9.0] - 2026-01-21
 
 ### Added
@@ -28,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Package description updated to include new modules
 
 ### Purpose
-These modules were migrated from `ai-cac-research/src/preprocessing/adaptive/` to enable cross-project reuse for:
+These modules support cross-project reuse for:
 - NLST 2mm/5mm slice thickness reprocessing
 - Multi-thickness validation research
 - RESCUE phenomenon analysis
@@ -132,7 +168,7 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
 
 ### Performance
 - **97% time savings** when reusing existing segmentation results
-- PCFA: 11+ hours → ~25 minutes for 464 cases (with VBCA results available)
+- Pericardial fat analysis: 11+ hours -> ~25 minutes for 464 cases (with existing results)
 
 ---
 
@@ -141,9 +177,9 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
 ### Added
 - TotalSegmentator `--roi_subset` support for single-organ segmentation
   - New `totalsegmentator_roi_subset` parameter in PreprocessingConfig
-  - Example: `roi_subset="heart"` for PCFA (pericardial fat analysis)
-  - **Performance**: 1.5-2x speedup for single-organ tasks (68s → 43s on RTX 2060)
-  - PCFA results consistent (< 0.5% difference vs full segmentation)
+  - Example: `roi_subset="heart"` for pericardial fat analysis
+  - **Performance**: 1.5-2x speedup for single-organ tasks (68s -> 43s on RTX 2060)
+  - Results consistent (< 0.5% difference vs full segmentation)
 
 ---
 
@@ -174,7 +210,7 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
   - `SharedPreprocessingPipeline` - Multi-module preprocessing
   - Automatic mask discovery (heart, aorta, vertebrae)
   - TotalSegmentator integration with caching
-  - Module-specific mask requirements (PCFA, PVAT, VBCA, Chamber)
+  - Module-specific mask requirements for various analysis types
 
 ### Changed
 - Added 40 new unit tests
@@ -196,7 +232,7 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
 ### Performance
 - GPU stabilization time reduced from 5s to 1-2s for RTX 40 series
 - Expected 5-10% speedup for TotalSegmentator pipelines
-- For 464 CHD cases: ~20h → ~18-19h (~1-2h savings)
+- For 464 cases: ~20h -> ~18-19h (~1-2h savings)
 
 ---
 
@@ -205,7 +241,7 @@ registry = DatasetRegistry.from_yaml("config/datasets_registry.yaml")
 ### Added
 - Data sources management module (`cardiac_shared.data_sources`)
   - `DataSourceManager` - Multi-source data management
-  - Support for ZAL, CHD, Normal, Custom datasets
+  - Support for multiple dataset configurations via YAML
   - Automatic environment detection (WSL/Windows/Linux)
   - YAML configuration support
 - Vertebra detection module (`cardiac_shared.vertebra`)

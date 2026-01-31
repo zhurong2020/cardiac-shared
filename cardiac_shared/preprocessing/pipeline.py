@@ -90,11 +90,11 @@ class SharedPreprocessingPipeline:
     - Mask discovery and validation
     - Batch processing support
 
-    Designed for use by:
-    - PCFA (requires heart mask)
-    - PVAT (requires aorta mask)
-    - VBCA (requires vertebrae masks)
-    - Chamber Analysis (requires heart mask)
+    Designed for use by analysis modules such as:
+    - Pericardial fat analysis (requires heart mask)
+    - Perivascular fat analysis (requires aorta mask)
+    - Vertebra body composition analysis (requires vertebrae masks)
+    - Chamber analysis (requires heart mask)
 
     Example:
         >>> pipeline = SharedPreprocessingPipeline(
@@ -142,15 +142,15 @@ class SharedPreprocessingPipeline:
         "lung_right": "lung_right.nii.gz",
     }
 
-    # Module-specific mask requirements
+    # Analysis module mask requirements (keyed by analysis type abbreviation)
     MODULE_REQUIREMENTS = {
-        "pcfa": ["heart"],
-        "pvat": ["aorta"],
-        "vbca": ["vertebrae_T12", "vertebrae_L1", "vertebrae_L2", "vertebrae_L3"],
-        "chamber": ["heart", "heart_atrium_left", "heart_atrium_right",
-                   "heart_ventricle_left", "heart_ventricle_right"],
+        "pericardial_fat": ["heart"],
+        "perivascular_fat": ["aorta"],
+        "vertebra_composition": ["vertebrae_T12", "vertebrae_L1", "vertebrae_L2", "vertebrae_L3"],
+        "chamber_analysis": ["heart", "heart_atrium_left", "heart_atrium_right",
+                            "heart_ventricle_left", "heart_ventricle_right"],
         "liver_fat": ["liver"],
-        "kidney_vol": ["kidney_left", "kidney_right"],
+        "kidney_volume": ["kidney_left", "kidney_right"],
     }
 
     def __init__(
@@ -735,7 +735,7 @@ class SharedPreprocessingPipeline:
         Args:
             patient_id: Patient identifier
             dataset_id: Dataset identifier
-            module: Module name ("pcfa", "pvat", "vbca", "chamber")
+            module: Analysis type (e.g., "pericardial_fat", "vertebra_composition")
 
         Returns:
             Dictionary of mask_name -> Path (or None if not found)
@@ -776,7 +776,7 @@ class SharedPreprocessingPipeline:
         Args:
             patient_id: Patient identifier
             dataset_id: Dataset identifier
-            module: Module name ("pcfa", "pvat", "vbca", "chamber")
+            module: Analysis type (e.g., "pericardial_fat", "vertebra_composition")
 
         Returns:
             Tuple of (valid, list of missing mask names)
