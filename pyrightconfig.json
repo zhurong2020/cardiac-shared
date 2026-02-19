@@ -1,0 +1,19 @@
+{
+  "include": [
+    "cardiac_shared",
+    "tests"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/node_modules",
+    "dist",
+    "*.egg-info"
+  ],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false,
+  "reportPossiblyUnbound": false,
+  "reportOptionalMemberAccess": false
+}
