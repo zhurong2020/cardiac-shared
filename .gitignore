@@ -1,47 +1,21 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-*.egg
-
-# Virtual environments
+﻿.venv/
 venv/
-.venv/
-ENV/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-*.env
-
-# IDE
+env/
+__pycache__/
+*.pyc
 .idea/
 .vscode/
-*.swp
-*.swo
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
+# Ignore large medical data files
+*.dcm
+*.nii
+*.nii.gz
+*.mhd
+*.raw
+*.zip
+*.h5
 
-# PyPI credentials
-.pypirc
+# Local config
+.env
+config_local.yaml
+*.egg-info/
