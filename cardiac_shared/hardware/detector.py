@@ -217,7 +217,7 @@ def detect_environment() -> EnvironmentInfo:
     else:
         runtime_type = 'unknown'
 
-    logger.info(f"Detected environment: {runtime_type}")
+    logger.debug(f"Detected environment: {runtime_type}")
 
     return EnvironmentInfo(
         runtime_type=runtime_type,
@@ -231,7 +231,7 @@ def detect_environment() -> EnvironmentInfo:
 def detect_gpu() -> GPUInfo:
     """Detect GPU information"""
     if not TORCH_AVAILABLE:
-        logger.info("PyTorch not installed, GPU detection unavailable")
+        logger.debug("PyTorch not installed, GPU detection unavailable")
         return GPUInfo(
             available=False,
             device_name="CPU (PyTorch not available)",
@@ -241,7 +241,7 @@ def detect_gpu() -> GPUInfo:
         )
 
     if not torch.cuda.is_available():
-        logger.info("CUDA not available, using CPU mode")
+        logger.debug("CUDA not available, using CPU mode")
         return GPUInfo(
             available=False,
             device_name="CPU",
@@ -264,7 +264,7 @@ def detect_gpu() -> GPUInfo:
         vram_allocated = torch.cuda.memory_allocated(0) / 1024**3
         vram_available_gb = vram_total_gb - vram_allocated
 
-        logger.info(f"Detected GPU: {device_name} ({vram_total_gb:.1f}GB VRAM)")
+        logger.debug(f"Detected GPU: {device_name} ({vram_total_gb:.1f}GB VRAM)")
 
         return GPUInfo(
             available=True,
@@ -333,7 +333,7 @@ def detect_cpu() -> CPUInfo:
         except:
             pass
 
-        logger.info(f"Detected CPU: {physical_cores} cores ({logical_cores} threads)")
+        logger.debug(f"Detected CPU: {physical_cores} cores ({logical_cores} threads)")
 
         return CPUInfo(
             physical_cores=physical_cores,
@@ -359,7 +359,7 @@ def detect_ram() -> RAMInfo:
         available_gb = mem.available / 1024**3
         percent_used = mem.percent
 
-        logger.info(f"Detected RAM: {total_gb:.1f}GB total, {available_gb:.1f}GB available")
+        logger.debug(f"Detected RAM: {total_gb:.1f}GB total, {available_gb:.1f}GB available")
 
         return RAMInfo(
             total_gb=total_gb,
@@ -391,9 +391,9 @@ def detect_hardware() -> HardwareInfo:
         >>> print(f"RAM: {hw.ram.total_gb:.1f}GB")
         >>> print(f"Performance tier: {hw.performance_tier}")
     """
-    logger.info("="*70)
-    logger.info("Detecting hardware configuration...")
-    logger.info("="*70)
+    logger.debug("="*70)
+    logger.debug("Detecting hardware configuration...")
+    logger.debug("="*70)
 
     environment = detect_environment()
     gpu = detect_gpu()
@@ -409,9 +409,9 @@ def detect_hardware() -> HardwareInfo:
         python_version=platform.python_version()
     )
 
-    logger.info("="*70)
-    logger.info(f"Hardware detection complete - Tier: {hw_info.performance_tier}")
-    logger.info("="*70)
+    logger.debug("="*70)
+    logger.debug(f"Hardware detection complete - Tier: {hw_info.performance_tier}")
+    logger.debug("="*70)
 
     return hw_info
 
