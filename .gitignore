@@ -19,3 +19,5 @@ __pycache__/
 .env
 config_local.yaml
 *.egg-info/
+dist/
+build/
